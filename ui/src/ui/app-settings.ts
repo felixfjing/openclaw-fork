@@ -47,10 +47,12 @@ import { loadUsage, type UsageState } from "./controllers/usage.ts";
 import { isMonitoredAuthProvider } from "./model-auth-helpers.ts";
 import {
   inferBasePathFromPathname,
+  isStandaloneChatPath,
   normalizeBasePath,
   normalizePath,
   pathForTab,
   tabFromPath,
+  CHAT_STANDALONE_PATH,
   type Tab,
 } from "./navigation.ts";
 import { saveSettings, type UiSettings } from "./storage.ts";
@@ -71,6 +73,7 @@ type SettingsHost = {
   applySessionKey: string;
   sessionKey: string;
   tab: Tab;
+  chatStandalone: boolean;
   connected: boolean;
   chatHasAutoScrolled: boolean;
   logsAtBottom: boolean;
@@ -461,6 +464,7 @@ export function syncTabWithLocation(host: SettingsHost, replace: boolean) {
   if (typeof window === "undefined") {
     return;
   }
+  host.chatStandalone = isStandaloneChatPath(window.location.pathname, host.basePath);
   const resolved = tabFromPath(window.location.pathname, host.basePath) ?? "chat";
   setTabFromRoute(host, resolved);
   syncUrlWithTab(host, resolved, replace);
@@ -470,8 +474,12 @@ export function onPopState(host: SettingsHost) {
   if (typeof window === "undefined") {
     return;
   }
+  host.chatStandalone = isStandaloneChatPath(window.location.pathname, host.basePath);
   const resolved = tabFromPath(window.location.pathname, host.basePath);
   if (!resolved) {
+    if (host.chatStandalone) {
+      setTabFromRoute(host, "chat");
+    }
     return;
   }
 
@@ -503,6 +511,10 @@ function applyTabSelection(
   const prev = host.tab;
   host.tab = next;
 
+  if (next !== "chat") {
+    host.chatStandalone = false;
+  }
+
   // Cleanup chat module state when navigating away from chat
   if (prev === "chat" && next !== "chat") {
     resetChatViewState();
@@ -531,7 +543,11 @@ export function syncUrlWithTab(host: SettingsHost, tab: Tab, replace: boolean) {
   if (typeof window === "undefined") {
     return;
   }
-  const targetPath = normalizePath(pathForTab(tab, host.basePath));
+  const targetPath = normalizePath(
+    tab === "chat" && host.chatStandalone
+      ? `${normalizeBasePath(host.basePath)}${CHAT_STANDALONE_PATH}`
+      : pathForTab(tab, host.basePath),
+  );
   const currentPath = normalizePath(window.location.pathname);
   const url = new URL(window.location.href);
 

@@ -92,6 +92,18 @@ describe("control UI routing", () => {
     expect(dreamsLink).not.toBeNull();
   });
 
+  it("renders standalone chat without the dashboard shell", async () => {
+    const app = mountApp("/chat/standalone");
+    await app.updateComplete;
+
+    expect(app.chatStandalone).toBe(true);
+    expect(window.location.pathname).toBe("/chat/standalone");
+    expect(app.querySelector(".topbar")).toBeNull();
+    expect(app.querySelector(".shell-nav")).toBeNull();
+    expect(app.querySelector(".content-header")).toBeNull();
+    expect(app.querySelector(".chat")).not.toBeNull();
+  });
+
   it("renders the dreaming view on the /dreaming route", async () => {
     const app = mountApp("/dreaming");
     app.dreamingStatus = {

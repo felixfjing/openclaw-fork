@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  CHAT_STANDALONE_PATH,
   TAB_GROUPS,
   iconForTab,
   inferBasePathFromPathname,
+  isStandaloneChatPath,
   normalizeBasePath,
   normalizePath,
   pathForTab,
@@ -128,6 +130,7 @@ describe("pathForTab", () => {
 describe("tabFromPath", () => {
   it("returns tab for valid path", () => {
     expect(tabFromPath("/chat")).toBe("chat");
+    expect(tabFromPath("/chat/standalone")).toBe("chat");
     expect(tabFromPath("/overview")).toBe("overview");
     expect(tabFromPath("/sessions")).toBe("sessions");
     expect(tabFromPath("/dreaming")).toBe("dreams");
@@ -150,6 +153,14 @@ describe("tabFromPath", () => {
   it("is case-insensitive", () => {
     expect(tabFromPath("/CHAT")).toBe("chat");
     expect(tabFromPath("/Overview")).toBe("overview");
+  });
+});
+
+describe("isStandaloneChatPath", () => {
+  it("recognizes the standalone chat route", () => {
+    expect(isStandaloneChatPath(CHAT_STANDALONE_PATH)).toBe(true);
+    expect(isStandaloneChatPath("/ui/chat/standalone", "/ui")).toBe(true);
+    expect(isStandaloneChatPath("/chat")).toBe(false);
   });
 });
 

@@ -24,6 +24,8 @@ export const TAB_GROUPS = [
   },
 ] as const;
 
+export const CHAT_STANDALONE_PATH = "/chat/standalone";
+
 export type Tab =
   | "agents"
   | "overview"
@@ -68,6 +70,7 @@ const TAB_PATHS: Record<Tab, string> = {
 };
 
 const PATH_ALIASES: Record<string, Tab> = {
+  "/chat/standalone": "chat",
   "/dreams": "dreams",
 };
 
@@ -131,6 +134,19 @@ export function tabFromPath(pathname: string, basePath = ""): Tab | null {
     return "chat";
   }
   return PATH_TO_TAB.get(normalized) ?? null;
+}
+
+export function isStandaloneChatPath(pathname: string, basePath = ""): boolean {
+  const base = normalizeBasePath(basePath);
+  let path = pathname || "/";
+  if (base) {
+    if (path === base) {
+      path = "/";
+    } else if (path.startsWith(`${base}/`)) {
+      path = path.slice(base.length);
+    }
+  }
+  return normalizeLowercaseStringOrEmpty(normalizePath(path)) === CHAT_STANDALONE_PATH;
 }
 
 export function inferBasePathFromPathname(pathname: string): string {

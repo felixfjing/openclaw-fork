@@ -52,6 +52,7 @@ export type AppViewState = {
   loginShowGatewayToken: boolean;
   loginShowGatewayPassword: boolean;
   tab: Tab;
+  chatStandalone: boolean;
   onboarding: boolean;
   basePath: string;
   connected: boolean;

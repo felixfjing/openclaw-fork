@@ -19,7 +19,8 @@
     "nav content";
   gap: 0;
   animation: dashboard-enter 0.3s var(--ease-out);
-  transition: grid-template-columns var(--shell-focus-duration) var(--shell-focus-ease);
+  transition: grid-template-columns var(--shell-focus-duration)
+    var(--shell-focus-ease);
   overflow: hidden;
 }
 
@@ -47,6 +48,26 @@
 
 .shell--chat-focus {
   grid-template-columns: 0px minmax(0, 1fr);
+}
+
+.shell--chat-standalone {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "content";
+}
+
+.shell--chat-standalone .topbar,
+.shell--chat-standalone .shell-nav,
+.shell--chat-standalone .shell-nav-backdrop {
+  display: none;
+}
+
+.shell--chat-standalone .content {
+  padding-top: 0;
+}
+
+.shell--chat-standalone .content > * + * {
+  margin-top: 0;
 }
 
 .shell--onboarding {
@@ -614,7 +635,11 @@
 .nav-item.active,
 .nav-item--active {
   color: var(--text-strong);
-  background: color-mix(in srgb, var(--accent-subtle) 88%, var(--bg-elevated) 12%);
+  background: color-mix(
+    in srgb,
+    var(--accent-subtle) 88%,
+    var(--bg-elevated) 12%
+  );
   border-color: color-mix(in srgb, var(--accent) 18%, transparent);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
@@ -1010,8 +1035,10 @@
     opacity var(--duration-fast) ease;
 }
 
-.dreaming-header-controls__mode:hover:not(:disabled) .dreaming-header-controls__mode-detail,
-.dreaming-header-controls__mode:focus:not(:disabled) .dreaming-header-controls__mode-detail {
+.dreaming-header-controls__mode:hover:not(:disabled)
+  .dreaming-header-controls__mode-detail,
+.dreaming-header-controls__mode:focus:not(:disabled)
+  .dreaming-header-controls__mode-detail {
   max-width: 220px;
   margin-left: 6px;
   opacity: 0.95;

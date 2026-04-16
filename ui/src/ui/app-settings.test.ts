@@ -149,6 +149,7 @@ const createHost = (tab: Tab): SettingsHost => ({
   applySessionKey: "main",
   sessionKey: "main",
   tab,
+  chatStandalone: false,
   connected: false,
   chatHasAutoScrolled: false,
   logsAtBottom: false,
