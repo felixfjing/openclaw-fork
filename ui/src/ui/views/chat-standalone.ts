@@ -15,11 +15,17 @@ import type { GatewaySessionRow } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import { resolveAgentAvatarUrl } from "./agents-utils.ts";
 import { renderEmptyState } from "./chat-standalone/empty-state.ts";
-import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import {
-  buildChatItems,
-  syncToolCardExpansionState,
-} from "./chat-standalone/items.ts";
+  adjustTextareaHeight,
+  createChatInputHandler,
+  createChatKeyDownHandler,
+  exportMarkdown,
+  handleDrop,
+  handleFileSelect,
+  handlePaste,
+  tokenEstimate,
+} from "./chat-standalone/interaction.ts";
+import { buildChatItems, syncToolCardExpansionState } from "./chat-standalone/items.ts";
 import { renderLoadingState } from "./chat-standalone/loading.ts";
 import {
   renderAttachmentPreview,
@@ -34,24 +40,18 @@ import {
 } from "./chat-standalone/renderers.ts";
 import {
   chatViewState,
+  clearEmptyStateCronLoadRequested,
   getDeletedMessages,
   getExpandedToolCards,
   getInputHistory,
   getPinnedMessages,
+  hasEmptyStateCronLoadRequested,
   resetChatViewState as resetChatViewStateImpl,
+  markEmptyStateCronLoadRequested,
   cleanupChatModuleState as cleanupChatModuleStateImpl,
 } from "./chat-standalone/state.ts";
-import {
-  adjustTextareaHeight,
-  createChatInputHandler,
-  createChatKeyDownHandler,
-  exportMarkdown,
-  handleDrop,
-  handleFileSelect,
-  handlePaste,
-  tokenEstimate,
-} from "./chat-standalone/interaction.ts";
 import type { ChatProps } from "./chat-standalone/types.ts";
+import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../../styles/chat-standalone.css";
 import "../components/resizable-divider.ts";
 
@@ -95,8 +95,7 @@ function renderModelSelect(props: ChatProps): TemplateResult | typeof nothing {
         data-chat-model-select="true"
         aria-label="Select model"
         ?disabled=${!props.connected}
-        @change=${(e: Event) =>
-          props.onModelChange?.((e.target as HTMLSelectElement).value)}
+        @change=${(e: Event) => props.onModelChange?.((e.target as HTMLSelectElement).value)}
       >
         <option value="" ?selected=${modelSelectState.currentOverride === ""}>
           ${modelSelectState.defaultLabel}
@@ -132,6 +131,15 @@ function renderChatThread(
   requestUpdate: () => void,
 ): TemplateResult {
   const isEmpty = chatItems.length === 0 && !props.loading;
+  const shouldShowEmptyState = isEmpty && !chatViewState.searchOpen;
+  if (shouldShowEmptyState) {
+    if (props.loadCron && !hasEmptyStateCronLoadRequested(props.sessionKey)) {
+      markEmptyStateCronLoadRequested(props.sessionKey);
+      void props.loadCron();
+    }
+  } else {
+    clearEmptyStateCronLoadRequested(props.sessionKey);
+  }
   return html`
     <div
       class="chat-thread"
@@ -142,9 +150,7 @@ function renderChatThread(
     >
       <div class="chat-thread-inner">
         ${props.loading ? renderLoadingState() : nothing}
-        ${isEmpty && !chatViewState.searchOpen
-          ? renderEmptyState(props)
-          : nothing}
+        ${shouldShowEmptyState ? renderEmptyState(props) : nothing}
         ${isEmpty && chatViewState.searchOpen
           ? html` <div class="agent-chat__empty">No matching messages</div> `
           : nothing}
@@ -154,11 +160,7 @@ function renderChatThread(
           (item) => {
             if (item.kind === "divider") {
               return html`
-                <div
-                  class="chat-divider"
-                  role="separator"
-                  data-ts=${String(item.timestamp)}
-                >
+                <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
                   <span class="chat-divider__line"></span>
                   <span class="chat-divider__label">${item.label}</span>
                   <span class="chat-divider__line"></span>
@@ -166,10 +168,7 @@ function renderChatThread(
               `;
             }
             if (item.kind === "reading-indicator") {
-              return renderReadingIndicatorGroup(
-                assistantIdentity,
-                props.basePath,
-              );
+              return renderReadingIndicatorGroup(assistantIdentity, props.basePath);
             }
             if (item.kind === "stream") {
               return renderStreamingGroup(
@@ -192,19 +191,12 @@ function renderChatThread(
                 isToolMessageExpanded: (messageId: string) =>
                   expandedToolCards.get(messageId) ?? false,
                 onToggleToolMessageExpanded: (messageId: string) => {
-                  expandedToolCards.set(
-                    messageId,
-                    !expandedToolCards.get(messageId),
-                  );
+                  expandedToolCards.set(messageId, !expandedToolCards.get(messageId));
                   requestUpdate();
                 },
-                isToolExpanded: (toolCardId: string) =>
-                  expandedToolCards.get(toolCardId) ?? false,
+                isToolExpanded: (toolCardId: string) => expandedToolCards.get(toolCardId) ?? false,
                 onToggleToolExpanded: (toolCardId: string) => {
-                  expandedToolCards.set(
-                    toolCardId,
-                    !expandedToolCards.get(toolCardId),
-                  );
+                  expandedToolCards.set(toolCardId, !expandedToolCards.get(toolCardId));
                   requestUpdate();
                 },
                 onRequestUpdate: requestUpdate,
@@ -212,15 +204,12 @@ function renderChatThread(
                 assistantAvatar: assistantIdentity.avatar,
                 basePath: props.basePath,
                 localMediaPreviewRoots: props.localMediaPreviewRoots ?? [],
-                assistantAttachmentAuthToken:
-                  props.assistantAttachmentAuthToken ?? null,
+                assistantAttachmentAuthToken: props.assistantAttachmentAuthToken ?? null,
                 canvasHostUrl: props.canvasHostUrl,
                 embedSandboxMode: props.embedSandboxMode ?? "scripts",
                 allowExternalEmbedUrls: props.allowExternalEmbedUrls ?? false,
                 contextWindow:
-                  activeSession?.contextTokens ??
-                  props.sessions?.defaults?.contextTokens ??
-                  null,
+                  activeSession?.contextTokens ?? props.sessions?.defaults?.contextTokens ?? null,
                 onDelete: () => {
                   deleted.delete(item.key);
                   requestUpdate();
@@ -239,9 +228,7 @@ export function renderChatStandalone(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
   const canAbort = Boolean(props.canAbort && props.onAbort);
-  const activeSession = props.sessions?.sessions?.find(
-    (row) => row.key === props.sessionKey,
-  );
+  const activeSession = props.sessions?.sessions?.find((row) => row.key === props.sessionKey);
   const reasoningLevel = activeSession?.reasoningLevel ?? "off";
   const showReasoning = props.showThinking && reasoningLevel !== "off";
   const assistantIdentity = {
@@ -270,11 +257,7 @@ export function renderChatStandalone(props: ChatProps) {
   const sessionSidebar = renderSessionSidebarView(props, requestUpdate);
 
   const chatItems = buildChatItems(props);
-  syncToolCardExpansionState(
-    props.sessionKey,
-    chatItems,
-    Boolean(props.autoExpandToolCalls),
-  );
+  syncToolCardExpansionState(props.sessionKey, chatItems, Boolean(props.autoExpandToolCalls));
   const expandedToolCards = getExpandedToolCards(props.sessionKey);
 
   const thread = renderChatThread(
@@ -293,7 +276,6 @@ export function renderChatStandalone(props: ChatProps) {
     requestUpdate,
     inputHistory,
     canCompose,
-    getDraft,
   });
   const handleInput = createChatInputHandler({
     props,
@@ -310,26 +292,15 @@ export function renderChatStandalone(props: ChatProps) {
         @drop=${(e: DragEvent) => handleDrop(e, props)}
         @dragover=${(e: DragEvent) => e.preventDefault()}
       >
-        ${props.disabledReason
-          ? html`<div class="callout">${props.disabledReason}</div>`
-          : nothing}
-        ${props.error
-          ? html`<div class="callout danger">${props.error}</div>`
-          : nothing}
+        ${props.disabledReason ? html`<div class="callout">${props.disabledReason}</div>` : nothing}
+        ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
         <div class="chat-standalone__content">
-          ${renderSearchBar(requestUpdate)}
-          ${renderPinnedSection(props, pinned, requestUpdate)}
+          ${renderSearchBar(requestUpdate)} ${renderPinnedSection(props, pinned, requestUpdate)}
 
-          <div
-            class="chat-split-container ${sidebarOpen
-              ? "chat-split-container--open"
-              : ""}"
-          >
+          <div class="chat-split-container ${sidebarOpen ? "chat-split-container--open" : ""}">
             <div
               class="chat-main"
-              style="flex: ${sidebarOpen
-                ? `0 0 ${splitRatio * 100}%`
-                : "1 1 100%"}"
+              style="flex: ${sidebarOpen ? `0 0 ${splitRatio * 100}%` : "1 1 100%"}"
             >
               ${thread}
             </div>
@@ -338,8 +309,7 @@ export function renderChatStandalone(props: ChatProps) {
               ? html`
                   <resizable-divider
                     .splitRatio=${splitRatio}
-                    @resize=${(e: CustomEvent) =>
-                      props.onSplitRatioChange?.(e.detail.splitRatio)}
+                    @resize=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.splitRatio)}
                   ></resizable-divider>
                   <div class="chat-sidebar">
                     ${renderMarkdownSidebar({
@@ -347,8 +317,7 @@ export function renderChatStandalone(props: ChatProps) {
                       error: props.sidebarError ?? null,
                       canvasHostUrl: props.canvasHostUrl,
                       embedSandboxMode: props.embedSandboxMode ?? "scripts",
-                      allowExternalEmbedUrls:
-                        props.allowExternalEmbedUrls ?? false,
+                      allowExternalEmbedUrls: props.allowExternalEmbedUrls ?? false,
                       onClose: props.onCloseSidebar!,
                       onViewRawText: () => {
                         if (!props.sidebarContent || !props.onOpenSidebar) {
@@ -356,9 +325,7 @@ export function renderChatStandalone(props: ChatProps) {
                         }
                         if (props.sidebarContent.kind === "markdown") {
                           props.onOpenSidebar(
-                            buildSidebarContent(
-                              `\`\`\`\n${props.sidebarContent.content}\n\`\`\``,
-                            ),
+                            buildSidebarContent(`\`\`\`\n${props.sidebarContent.content}\n\`\`\``),
                           );
                           return;
                         }
@@ -380,18 +347,14 @@ export function renderChatStandalone(props: ChatProps) {
         ${props.queue.length
           ? html`
               <div class="chat-queue" role="status" aria-live="polite">
-                <div class="chat-queue__title">
-                  Queued (${props.queue.length})
-                </div>
+                <div class="chat-queue__title">Queued (${props.queue.length})</div>
                 <div class="chat-queue__list">
                   ${props.queue.map(
                     (item) => html`
                       <div class="chat-queue__item">
                         <div class="chat-queue__text">
                           ${item.text ||
-                          (item.attachments?.length
-                            ? `Image (${item.attachments.length})`
-                            : "")}
+                          (item.attachments?.length ? `Image (${item.attachments.length})` : "")}
                         </div>
                         <button
                           class="btn chat-queue__remove"
@@ -411,25 +374,17 @@ export function renderChatStandalone(props: ChatProps) {
         ${renderSideResult(props.sideResult, props.onDismissSideResult)}
         ${renderFallbackIndicator(props.fallbackStatus)}
         ${renderCompactionIndicator(props.compactionStatus)}
-        ${renderContextNotice(
-          activeSession,
-          props.sessions?.defaults?.contextTokens ?? null,
-        )}
+        ${renderContextNotice(activeSession, props.sessions?.defaults?.contextTokens ?? null)}
         ${props.showNewMessages
           ? html`
-              <button
-                class="chat-new-messages"
-                type="button"
-                @click=${props.onScrollToBottom}
-              >
+              <button class="chat-new-messages" type="button" @click=${props.onScrollToBottom}>
                 ${icons.arrowDown} New messages
               </button>
             `
           : nothing}
 
         <div class="agent-chat__input">
-          ${renderSlashMenu(requestUpdate, props)}
-          ${renderAttachmentPreview(props)}
+          ${renderSlashMenu(requestUpdate, props)} ${renderAttachmentPreview(props)}
 
           <input
             type="file"
@@ -440,34 +395,26 @@ export function renderChatStandalone(props: ChatProps) {
           />
 
           ${chatViewState.sttRecording && chatViewState.sttInterimText
-            ? html`<div class="agent-chat__stt-interim">
-                ${chatViewState.sttInterimText}
-              </div>`
+            ? html`<div class="agent-chat__stt-interim">${chatViewState.sttInterimText}</div>`
             : nothing}
 
           <div class="agent-chat__composer">
             <textarea
-              ${ref(
-                (el) => el && adjustTextareaHeight(el as HTMLTextAreaElement),
-              )}
+              ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
               .value=${props.draft}
               dir=${detectTextDirection(props.draft)}
               ?disabled=${!props.connected}
               @keydown=${handleKeyDown}
               @input=${handleInput}
               @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
-              placeholder=${chatViewState.sttRecording
-                ? "Listening..."
-                : placeholder}
+              placeholder=${chatViewState.sttRecording ? "Listening..." : placeholder}
               rows="1"
             ></textarea>
 
             <div class="agent-chat__toolbar">
               <div class="agent-chat__toolbar-left">
                 ${renderModelSelect(props)}
-                ${tokens
-                  ? html`<span class="agent-chat__token-count">${tokens}</span>`
-                  : nothing}
+                ${tokens ? html`<span class="agent-chat__token-count">${tokens}</span>` : nothing}
               </div>
 
               <div class="agent-chat__toolbar-right">
@@ -475,11 +422,7 @@ export function renderChatStandalone(props: ChatProps) {
                 <button
                   class="agent-chat__input-btn"
                   @click=${() => {
-                    document
-                      .querySelector<HTMLInputElement>(
-                        ".agent-chat__file-input",
-                      )
-                      ?.click();
+                    document.querySelector<HTMLInputElement>(".agent-chat__file-input")?.click();
                   }}
                   title="Attach file"
                   aria-label="Attach file"
@@ -514,10 +457,7 @@ export function renderChatStandalone(props: ChatProps) {
                               onTranscript: (text, isFinal) => {
                                 if (isFinal) {
                                   const current = getDraft();
-                                  const sep =
-                                    current && !current.endsWith(" ")
-                                      ? " "
-                                      : "";
+                                  const sep = current && !current.endsWith(" ") ? " " : "";
                                   props.onDraftChange(current + sep + text);
                                   chatViewState.sttInterimText = "";
                                 } else {
@@ -546,9 +486,7 @@ export function renderChatStandalone(props: ChatProps) {
                             }
                           }
                         }}
-                        title=${chatViewState.sttRecording
-                          ? "Stop recording"
-                          : "Voice input"}
+                        title=${chatViewState.sttRecording ? "Stop recording" : "Voice input"}
                         ?disabled=${!props.connected}
                       >
                         ${chatViewState.sttRecording ? icons.micOff : icons.mic}

@@ -1,11 +1,13 @@
 import { render } from "lit";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import "../../test-helpers/load-styles.ts";
-import { renderChat, type ChatProps } from "./chat.ts";
+import type { CronJob } from "../types.ts";
 import {
+  cleanupChatModuleState,
   renderChatStandalone,
   type ChatProps as StandaloneChatProps,
 } from "./chat-standalone.ts";
+import { renderChat, type ChatProps } from "./chat.ts";
 
 const contextNoticeSessions: ChatProps["sessions"] = {
   ts: 0,
@@ -83,9 +85,7 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
   };
 }
 
-function createStandaloneProps(
-  overrides: Partial<StandaloneChatProps> = {},
-): StandaloneChatProps {
+function createStandaloneProps(overrides: Partial<StandaloneChatProps> = {}): StandaloneChatProps {
   return {
     ...createProps(),
     agentsList: null,
@@ -161,6 +161,7 @@ describe("chat context notice", () => {
 describe("chat standalone model picker", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+    cleanupChatModuleState();
   });
 
   it("renders the footer selector as a model picker", () => {
@@ -173,8 +174,49 @@ describe("chat standalone model picker", () => {
     );
     expect(modelSelect).not.toBeNull();
     expect(modelSelect?.value).toBe("openai/gpt-5-mini");
-    expect(
-      container.querySelector(".agent-chat__agent-select-label")?.textContent,
-    ).toBe("Model");
+    expect(container.querySelector(".agent-chat__agent-select-label")?.textContent).toBe("Model");
+  });
+
+  it("renders cron tasks in the empty state", () => {
+    const container = document.createElement("div");
+    const onLoadCron = vi.fn();
+    const cronJobs: CronJob[] = [
+      {
+        id: "cron-1",
+        name: "Daily ping",
+        enabled: true,
+        createdAtMs: 0,
+        updatedAtMs: 0,
+        schedule: { kind: "cron", expr: "0 9 * * *" },
+        sessionTarget: "main",
+        wakeMode: "next-heartbeat",
+        payload: { kind: "systemEvent", text: "Ping the main timeline" },
+        state: {
+          lastStatus: "error",
+          nextRunAtMs: 1_700_000_000_000,
+          lastRunAtMs: 1_699_999_000_000,
+        },
+      },
+    ];
+
+    render(
+      renderChatStandalone(
+        createStandaloneProps({
+          cronJobs,
+          loadCron: onLoadCron,
+        }),
+      ),
+      container,
+    );
+
+    const taskList = container.querySelector(".chat-standalone-empty__jobs");
+    expect(taskList).not.toBeNull();
+    expect(container.querySelectorAll(".chat-standalone-empty__job-card")).toHaveLength(1);
+    expect(container.textContent).toContain("Daily ping");
+    expect(container.textContent).toContain("Ping the main timeline");
+    expect(container.textContent).toContain("main");
+    expect(container.textContent).toContain("next-heartbeat");
+    expect(container.textContent).toContain("Error");
+    expect(onLoadCron).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,12 +1,7 @@
 import { html } from "lit";
 import { getSafeLocalStorage } from "../../../local-storage.ts";
 import { icons } from "../../icons.ts";
-import {
-  isTtsSupported,
-  speakText,
-  stopTts,
-  isTtsSpeaking,
-} from "../speech.ts";
+import { speakText, stopTts, isTtsSpeaking } from "../speech.ts";
 import { extractTextCached } from "../message-extract.ts";
 import type { MessageGroup } from "../../types/chat-types.ts";
 

@@ -240,7 +240,10 @@ export class OpenClawApp extends LitElement {
   @state() dreamingModeSaving = false;
   @state() dreamDiaryLoading = false;
   @state() dreamDiaryActionLoading = false;
-  @state() dreamDiaryActionMessage: { kind: "success" | "error"; text: string } | null = null;
+  @state() dreamDiaryActionMessage: {
+    kind: "success" | "error";
+    text: string;
+  } | null = null;
   @state() dreamDiaryActionArchivePath: string | null = null;
   @state() dreamDiaryError: string | null = null;
   @state() dreamDiaryPath: string | null = null;
@@ -405,10 +408,10 @@ export class OpenClawApp extends LitElement {
   @state() cronJobsLimit = 50;
   @state() cronJobsQuery = "";
   @state() cronJobsEnabledFilter: import("./types.js").CronJobsEnabledFilter = "all";
-  @state() cronJobsScheduleKindFilter: import("./controllers/cron.js").CronJobsScheduleKindFilter =
-    "all";
-  @state() cronJobsLastStatusFilter: import("./controllers/cron.js").CronJobsLastStatusFilter =
-    "all";
+  @state()
+  cronJobsScheduleKindFilter: import("./controllers/cron.js").CronJobsScheduleKindFilter = "all";
+  @state()
+  cronJobsLastStatusFilter: import("./controllers/cron.js").CronJobsLastStatusFilter = "all";
   @state() cronJobsSortBy: import("./types.js").CronJobsSortBy = "nextRunAtMs";
   @state() cronJobsSortDir: import("./types.js").CronSortDir = "asc";
   @state() cronStatus: CronStatus | null = null;
@@ -462,7 +465,10 @@ export class OpenClawApp extends LitElement {
   @state() clawhubDetailLoading = false;
   @state() clawhubDetailError: string | null = null;
   @state() clawhubInstallSlug: string | null = null;
-  @state() clawhubInstallMessage: { kind: "success" | "error"; text: string } | null = null;
+  @state() clawhubInstallMessage: {
+    kind: "success" | "error";
+    text: string;
+  } | null = null;
 
   @state() healthLoading = false;
   @state() healthResult: HealthSummary | null = null;

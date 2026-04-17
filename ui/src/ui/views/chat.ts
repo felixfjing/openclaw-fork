@@ -41,6 +41,7 @@ import { toSanitizedMarkdownHtml } from "../markdown.ts";
 import type { SidebarContent } from "../sidebar-content.ts";
 import { detectTextDirection } from "../text-direction.ts";
 import type { GatewaySessionRow, SessionsListResult } from "../types.ts";
+import type { CronJob } from "../types.ts";
 import type { ChatItem, MessageGroup, ToolCard } from "../types/chat-types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
 import { agentLogoUrl, resolveAgentAvatarUrl } from "./agents-utils.ts";
@@ -67,6 +68,7 @@ export type ChatProps = {
   assistantAvatarUrl?: string | null;
   draft: string;
   queue: ChatQueueItem[];
+  cronJobs?: CronJob[];
   connected: boolean;
   canSend: boolean;
   disabledReason: string | null;
@@ -101,7 +103,11 @@ export type ChatProps = {
   onNewSession: () => void;
   onClearHistory?: () => void;
   agentsList: {
-    agents: Array<{ id: string; name?: string; identity?: { name?: string; avatarUrl?: string } }>;
+    agents: Array<{
+      id: string;
+      name?: string;
+      identity?: { name?: string; avatarUrl?: string };
+    }>;
     defaultId?: string;
   } | null;
   currentAgentId: string;
@@ -227,7 +233,11 @@ function extractChatMessagePreview(toolMessage: unknown): {
   if (preview?.kind !== "canvas") {
     return null;
   }
-  return { preview, text: text ?? null, timestamp: normalized.timestamp ?? null };
+  return {
+    preview,
+    text: text ?? null,
+    timestamp: normalized.timestamp ?? null,
+  };
 }
 
 function findNearestAssistantMessageIndex(

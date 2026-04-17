@@ -52,6 +52,7 @@ type SettingsHost = {
   applySessionKey: string;
   sessionKey: string;
   tab: Tab;
+  chatStandalone: boolean;
   connected: boolean;
   chatHasAutoScrolled: boolean;
   logsAtBottom: boolean;
@@ -273,7 +274,9 @@ describe("setTabFromRoute", () => {
   it("normalizes light family themes to the shared light CSS token", () => {
     const root = {
       dataset: {} as DOMStringMap,
-      style: { colorScheme: "" } as CSSStyleDeclaration & { colorScheme: string },
+      style: { colorScheme: "" } as CSSStyleDeclaration & {
+        colorScheme: string;
+      },
     };
     vi.stubGlobal("document", { documentElement: root } as Document);
 

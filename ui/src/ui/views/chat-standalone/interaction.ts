@@ -60,7 +60,8 @@ export function handleFileSelect(e: Event, props: ChatProps): void {
     return;
   }
   const current = props.attachments ?? [];
-  const additions: Array<{ id: string; dataUrl: string; mimeType: string }> = [];
+  const additions: Array<{ id: string; dataUrl: string; mimeType: string }> =
+    [];
   let pending = 0;
   for (const file of input.files) {
     if (!isSupportedChatAttachmentMimeType(file.type)) {
@@ -91,7 +92,8 @@ export function handleDrop(e: DragEvent, props: ChatProps): void {
     return;
   }
   const current = props.attachments ?? [];
-  const additions: Array<{ id: string; dataUrl: string; mimeType: string }> = [];
+  const additions: Array<{ id: string; dataUrl: string; mimeType: string }> =
+    [];
   let pending = 0;
   for (const file of files) {
     if (!isSupportedChatAttachmentMimeType(file.type)) {
@@ -121,7 +123,10 @@ export function resetSlashMenuState(): void {
   chatViewState.slashMenuItems = [];
 }
 
-export function updateSlashMenu(value: string, requestUpdate: () => void): void {
+export function updateSlashMenu(
+  value: string,
+  requestUpdate: () => void,
+): void {
   const argMatch = value.match(/^\/(\S+)\s(.*)$/);
   if (argMatch) {
     const cmdName = argMatch[1].toLowerCase();
@@ -129,7 +134,9 @@ export function updateSlashMenu(value: string, requestUpdate: () => void): void 
     const cmd = SLASH_COMMANDS.find((c) => c.name === cmdName);
     if (cmd?.argOptions?.length) {
       const filtered = argFilter
-        ? cmd.argOptions.filter((opt) => opt.toLowerCase().startsWith(argFilter))
+        ? cmd.argOptions.filter((opt) =>
+            opt.toLowerCase().startsWith(argFilter),
+          )
         : cmd.argOptions;
       if (filtered.length > 0) {
         chatViewState.slashMenuMode = "args";
@@ -249,30 +256,45 @@ export function createChatKeyDownHandler(args: {
   requestUpdate: () => void;
   inputHistory: InputHistory;
   canCompose: boolean;
-  getDraft: () => string;
 }): (e: KeyboardEvent) => void {
-  const { props, requestUpdate, inputHistory, canCompose, getDraft } = args;
+  const { props, requestUpdate, inputHistory, canCompose } = args;
   return (e: KeyboardEvent) => {
-    if (chatViewState.slashMenuOpen && chatViewState.slashMenuMode === "args" && chatViewState.slashMenuArgItems.length > 0) {
+    if (
+      chatViewState.slashMenuOpen &&
+      chatViewState.slashMenuMode === "args" &&
+      chatViewState.slashMenuArgItems.length > 0
+    ) {
       const len = chatViewState.slashMenuArgItems.length;
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          chatViewState.slashMenuIndex = (chatViewState.slashMenuIndex + 1) % len;
+          chatViewState.slashMenuIndex =
+            (chatViewState.slashMenuIndex + 1) % len;
           requestUpdate();
           return;
         case "ArrowUp":
           e.preventDefault();
-          chatViewState.slashMenuIndex = (chatViewState.slashMenuIndex - 1 + len) % len;
+          chatViewState.slashMenuIndex =
+            (chatViewState.slashMenuIndex - 1 + len) % len;
           requestUpdate();
           return;
         case "Tab":
           e.preventDefault();
-          selectSlashArg(chatViewState.slashMenuArgItems[chatViewState.slashMenuIndex], props, requestUpdate, false);
+          selectSlashArg(
+            chatViewState.slashMenuArgItems[chatViewState.slashMenuIndex],
+            props,
+            requestUpdate,
+            false,
+          );
           return;
         case "Enter":
           e.preventDefault();
-          selectSlashArg(chatViewState.slashMenuArgItems[chatViewState.slashMenuIndex], props, requestUpdate, true);
+          selectSlashArg(
+            chatViewState.slashMenuArgItems[chatViewState.slashMenuIndex],
+            props,
+            requestUpdate,
+            true,
+          );
           return;
         case "Escape":
           e.preventDefault();
@@ -283,26 +305,39 @@ export function createChatKeyDownHandler(args: {
       }
     }
 
-    if (chatViewState.slashMenuOpen && chatViewState.slashMenuItems.length > 0) {
+    if (
+      chatViewState.slashMenuOpen &&
+      chatViewState.slashMenuItems.length > 0
+    ) {
       const len = chatViewState.slashMenuItems.length;
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          chatViewState.slashMenuIndex = (chatViewState.slashMenuIndex + 1) % len;
+          chatViewState.slashMenuIndex =
+            (chatViewState.slashMenuIndex + 1) % len;
           requestUpdate();
           return;
         case "ArrowUp":
           e.preventDefault();
-          chatViewState.slashMenuIndex = (chatViewState.slashMenuIndex - 1 + len) % len;
+          chatViewState.slashMenuIndex =
+            (chatViewState.slashMenuIndex - 1 + len) % len;
           requestUpdate();
           return;
         case "Tab":
           e.preventDefault();
-          tabCompleteSlashCommand(chatViewState.slashMenuItems[chatViewState.slashMenuIndex], props, requestUpdate);
+          tabCompleteSlashCommand(
+            chatViewState.slashMenuItems[chatViewState.slashMenuIndex],
+            props,
+            requestUpdate,
+          );
           return;
         case "Enter":
           e.preventDefault();
-          selectSlashCommand(chatViewState.slashMenuItems[chatViewState.slashMenuIndex], props, requestUpdate);
+          selectSlashCommand(
+            chatViewState.slashMenuItems[chatViewState.slashMenuIndex],
+            props,
+            requestUpdate,
+          );
           return;
         case "Escape":
           e.preventDefault();

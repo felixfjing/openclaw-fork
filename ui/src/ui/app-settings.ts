@@ -60,6 +60,7 @@ import { normalizeOptionalString } from "./string-coerce.ts";
 import { startThemeTransition, type ThemeTransitionContext } from "./theme-transition.ts";
 import { resolveTheme, type ResolvedTheme, type ThemeMode, type ThemeName } from "./theme.ts";
 import type { AgentsListResult, AttentionItem } from "./types.ts";
+import { cleanupChatModuleState as cleanupStandaloneChatViewState } from "./views/chat-standalone.ts";
 import { resetChatViewState } from "./views/chat.ts";
 
 export { setLastActiveSessionKey } from "./app-last-active-session.ts";
@@ -518,6 +519,7 @@ function applyTabSelection(
   // Cleanup chat module state when navigating away from chat
   if (prev === "chat" && next !== "chat") {
     resetChatViewState();
+    cleanupStandaloneChatViewState();
   }
 
   if (next === "chat") {
