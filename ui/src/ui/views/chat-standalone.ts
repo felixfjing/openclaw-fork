@@ -14,6 +14,7 @@ import { detectTextDirection } from "../text-direction.ts";
 import type { GatewaySessionRow } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import { resolveAgentAvatarUrl } from "./agents-utils.ts";
+import { renderEmptyState } from "./chat-standalone/empty-state.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import {
   buildChatItems,
@@ -29,7 +30,6 @@ import {
   renderSideResult,
   renderSessionSidebarView,
   renderSlashMenu,
-  renderWelcomeState,
 } from "./chat-standalone/renderers.ts";
 import {
   chatViewState,
@@ -183,7 +183,7 @@ function renderChatThread(
             `
           : nothing}
         ${isEmpty && !chatViewState.searchOpen
-          ? renderWelcomeState(props)
+          ? renderEmptyState(props)
           : nothing}
         ${isEmpty && chatViewState.searchOpen
           ? html` <div class="agent-chat__empty">No matching messages</div> `

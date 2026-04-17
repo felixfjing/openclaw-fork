@@ -14,7 +14,7 @@
   width: 100%;
   min-height: 100dvh;
   box-sizing: border-box;
-  padding: 10px;
+  padding: 10px 0;
   background: #f5f7fa;
 }
 
@@ -318,6 +318,23 @@
   border: none;
   background: transparent;
 }
+
+.chat--standalone .chat-standalone__empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 320px;
+  padding: 32px 24px;
+}
+
+.chat--standalone .chat-standalone__empty-state-image {
+  display: block;
+  width: min(100%, 360px);
+  height: auto;
+  object-fit: contain;
+}
+
 .chat--standalone .chat-group.tool .chat-group-messages {
   gap: 8px;
 }
