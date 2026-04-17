@@ -101,7 +101,7 @@ describe("control UI routing", () => {
     expect(app.querySelector(".topbar")).toBeNull();
     expect(app.querySelector(".shell-nav")).toBeNull();
     expect(app.querySelector(".content-header")).toBeNull();
-    expect(app.querySelector(".chat")).not.toBeNull();
+    expect(app.querySelector(".chat--line")).not.toBeNull();
   });
 
   it("renders the dreaming view on the /dreaming route", async () => {

@@ -68,6 +68,42 @@ function handleCodeBlockCopy(e: Event): void {
   );
 }
 
+function renderAgentSelect(props: ChatProps): TemplateResult | typeof nothing {
+  const agents = props.agentsList?.agents ?? [];
+  if (!agents.length) {
+    return nothing;
+  }
+
+  const selectedAgent =
+    agents.find((agent) => agent.id === props.currentAgentId) ??
+    agents.find((agent) => agent.id === props.agentsList?.defaultId) ??
+    agents[0];
+
+  const selectedLabel = selectedAgent.name ?? selectedAgent.identity?.name ?? selectedAgent.id;
+
+  return html`
+    <label class="agent-chat__agent-select" title=${selectedLabel}>
+      <span class="agent-chat__agent-select-label">Agent</span>
+      <select
+        aria-label="Select agent"
+        ?disabled=${!props.connected}
+        @change=${(e: Event) => props.onAgentChange((e.target as HTMLSelectElement).value)}
+      >
+        ${repeat(
+          agents,
+          (agent) => agent.id,
+          (agent) => html`
+            <option value=${agent.id} ?selected=${agent.id === selectedAgent.id}>
+              ${agent.name ?? agent.identity?.name ?? agent.id}
+            </option>
+          `,
+        )}
+      </select>
+      <span class="agent-chat__agent-select-icon">${icons.chevronDown}</span>
+    </label>
+  `;
+}
+
 function renderChatThread(
   props: ChatProps,
   chatItems: Array<ChatItem | MessageGroup>,
@@ -263,7 +299,7 @@ export function renderChat(props: ChatProps) {
 
   return html`
     <section
-      class="card chat"
+      class="card chat chat--line"
       @drop=${(e: DragEvent) => handleDrop(e, props)}
       @dragover=${(e: DragEvent) => e.preventDefault()}
     >
@@ -367,6 +403,7 @@ export function renderChat(props: ChatProps) {
         : nothing}
 
       <div class="agent-chat__input">
+        <div class="agent-chat__input-hint">Add images, files, @ mentions, or / commands.</div>
         ${renderSlashMenu(requestUpdate, props)} ${renderAttachmentPreview(props)}
 
         <input
@@ -381,139 +418,143 @@ export function renderChat(props: ChatProps) {
           ? html`<div class="agent-chat__stt-interim">${chatViewState.sttInterimText}</div>`
           : nothing}
 
-        <textarea
-          ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
-          .value=${props.draft}
-          dir=${detectTextDirection(props.draft)}
-          ?disabled=${!props.connected}
-          @keydown=${handleKeyDown}
-          @input=${handleInput}
-          @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
-          placeholder=${chatViewState.sttRecording ? "Listening..." : placeholder}
-          rows="1"
-        ></textarea>
+        <div class="agent-chat__composer">
+          <textarea
+            ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
+            .value=${props.draft}
+            dir=${detectTextDirection(props.draft)}
+            ?disabled=${!props.connected}
+            @keydown=${handleKeyDown}
+            @input=${handleInput}
+            @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
+            placeholder=${chatViewState.sttRecording ? "Listening..." : placeholder}
+            rows="1"
+          ></textarea>
 
-        <div class="agent-chat__toolbar">
-          <div class="agent-chat__toolbar-left">
-            <button
-              class="agent-chat__input-btn"
-              @click=${() => {
-                document.querySelector<HTMLInputElement>(".agent-chat__file-input")?.click();
-              }}
-              title="Attach file"
-              aria-label="Attach file"
-              ?disabled=${!props.connected}
-            >
-              ${icons.paperclip}
-            </button>
+          <div class="agent-chat__toolbar">
+            <div class="agent-chat__toolbar-left">
+              ${renderAgentSelect(props)}
+              ${tokens ? html`<span class="agent-chat__token-count">${tokens}</span>` : nothing}
+            </div>
 
-            ${isSttSupported()
-              ? html`
-                  <button
-                    class="agent-chat__input-btn ${chatViewState.sttRecording
-                      ? "agent-chat__input-btn--recording"
-                      : ""}"
-                    @click=${() => {
-                      if (chatViewState.sttRecording) {
-                        stopStt();
-                        chatViewState.sttRecording = false;
-                        chatViewState.sttInterimText = "";
-                        requestUpdate();
-                      } else {
-                        const started = startStt({
-                          onTranscript: (text, isFinal) => {
-                            if (isFinal) {
-                              const current = getDraft();
-                              const sep = current && !current.endsWith(" ") ? " " : "";
-                              props.onDraftChange(current + sep + text);
+            <div class="agent-chat__toolbar-right">
+              ${nothing /* search hidden for now */}
+              <button
+                class="agent-chat__input-btn"
+                @click=${() => {
+                  document.querySelector<HTMLInputElement>(".agent-chat__file-input")?.click();
+                }}
+                title="Attach file"
+                aria-label="Attach file"
+                ?disabled=${!props.connected}
+              >
+                ${icons.paperclip}
+              </button>
+
+              ${canAbort
+                ? nothing
+                : html`
+                    <button
+                      class="btn btn--ghost"
+                      @click=${props.onNewSession}
+                      title="New session"
+                      aria-label="New session"
+                    >
+                      ${icons.plus}
+                    </button>
+                  `}
+              <button
+                class="btn btn--ghost"
+                @click=${() => exportMarkdown(props)}
+                title="Export"
+                aria-label="Export chat"
+                ?disabled=${props.messages.length === 0}
+              >
+                ${icons.download}
+              </button>
+
+              ${isSttSupported()
+                ? html`
+                    <button
+                      class="agent-chat__input-btn ${chatViewState.sttRecording
+                        ? "agent-chat__input-btn--recording"
+                        : ""}"
+                      @click=${() => {
+                        if (chatViewState.sttRecording) {
+                          stopStt();
+                          chatViewState.sttRecording = false;
+                          chatViewState.sttInterimText = "";
+                          requestUpdate();
+                        } else {
+                          const started = startStt({
+                            onTranscript: (text, isFinal) => {
+                              if (isFinal) {
+                                const current = getDraft();
+                                const sep = current && !current.endsWith(" ") ? " " : "";
+                                props.onDraftChange(current + sep + text);
+                                chatViewState.sttInterimText = "";
+                              } else {
+                                chatViewState.sttInterimText = text;
+                              }
+                              requestUpdate();
+                            },
+                            onStart: () => {
+                              chatViewState.sttRecording = true;
+                              requestUpdate();
+                            },
+                            onEnd: () => {
+                              chatViewState.sttRecording = false;
                               chatViewState.sttInterimText = "";
-                            } else {
-                              chatViewState.sttInterimText = text;
-                            }
-                            requestUpdate();
-                          },
-                          onStart: () => {
+                              requestUpdate();
+                            },
+                            onError: () => {
+                              chatViewState.sttRecording = false;
+                              chatViewState.sttInterimText = "";
+                              requestUpdate();
+                            },
+                          });
+                          if (started) {
                             chatViewState.sttRecording = true;
                             requestUpdate();
-                          },
-                          onEnd: () => {
-                            chatViewState.sttRecording = false;
-                            chatViewState.sttInterimText = "";
-                            requestUpdate();
-                          },
-                          onError: () => {
-                            chatViewState.sttRecording = false;
-                            chatViewState.sttInterimText = "";
-                            requestUpdate();
-                          },
-                        });
-                        if (started) {
-                          chatViewState.sttRecording = true;
-                          requestUpdate();
+                          }
                         }
-                      }
-                    }}
-                    title=${chatViewState.sttRecording ? "Stop recording" : "Voice input"}
-                    ?disabled=${!props.connected}
-                  >
-                    ${chatViewState.sttRecording ? icons.micOff : icons.mic}
-                  </button>
-                `
-              : nothing}
-            ${tokens ? html`<span class="agent-chat__token-count">${tokens}</span>` : nothing}
-          </div>
+                      }}
+                      title=${chatViewState.sttRecording ? "Stop recording" : "Voice input"}
+                      ?disabled=${!props.connected}
+                    >
+                      ${chatViewState.sttRecording ? icons.micOff : icons.mic}
+                    </button>
+                  `
+                : nothing}
 
-          <div class="agent-chat__toolbar-right">
-            ${nothing /* search hidden for now */}
-            ${canAbort
-              ? nothing
-              : html`
-                  <button
-                    class="btn btn--ghost"
-                    @click=${props.onNewSession}
-                    title="New session"
-                    aria-label="New session"
-                  >
-                    ${icons.plus}
-                  </button>
-                `}
-            <button
-              class="btn btn--ghost"
-              @click=${() => exportMarkdown(props)}
-              title="Export"
-              aria-label="Export chat"
-              ?disabled=${props.messages.length === 0}
-            >
-              ${icons.download}
-            </button>
-
-            ${canAbort
-              ? html`
-                  <button
-                    class="chat-send-btn chat-send-btn--stop"
-                    @click=${props.onAbort}
-                    title="Stop"
-                    aria-label="Stop generating"
-                  >
-                    ${icons.stop}
-                  </button>
-                `
-              : html`
-                  <button
-                    class="chat-send-btn"
-                    @click=${() => {
-                      if (props.draft.trim()) {
-                        inputHistory.push(props.draft);
-                      }
-                      props.onSend();
-                    }}
-                    ?disabled=${!props.connected || props.sending}
-                    title=${isBusy ? "Queue" : "Send"}
-                    aria-label=${isBusy ? "Queue message" : "Send message"}
-                  >
-                    ${icons.send}
-                  </button>
-                `}
+              ${canAbort
+                ? html`
+                    <button
+                      class="chat-send-btn chat-send-btn--stop"
+                      @click=${props.onAbort}
+                      title="Stop"
+                      aria-label="Stop generating"
+                    >
+                      ${icons.stop}
+                    </button>
+                  `
+                : html`
+                    <button
+                      class="chat-send-btn"
+                      @click=${() => {
+                        if (props.draft.trim()) {
+                          inputHistory.push(props.draft);
+                        }
+                        props.onSend();
+                      }}
+                      ?disabled=${!props.connected || props.sending}
+                      title=${isBusy ? "Queue" : "Send"}
+                      aria-label=${isBusy ? "Queue message" : "Send message"}
+                    >
+                      ${icons.send}
+                    </button>
+                  `}
+            </div>
           </div>
         </div>
       </div>

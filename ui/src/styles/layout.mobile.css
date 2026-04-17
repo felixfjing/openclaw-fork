@@ -562,6 +562,39 @@
     height: 14px;
   }
 
+  .chat--line .agent-chat__input {
+    margin: 0 8px 10px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .chat--line .agent-chat__input-hint {
+    font-size: 11px;
+  }
+
+  .chat--line .agent-chat__composer {
+    gap: 8px;
+  }
+
+  .chat--line .agent-chat__composer > textarea {
+    min-height: 44px;
+  }
+
+  .chat--line .agent-chat__toolbar {
+    gap: 8px;
+  }
+
+  .chat--line .agent-chat__agent-select {
+    min-width: 160px;
+    height: 30px;
+    padding: 0 10px;
+  }
+
+  .chat--line .chat-send-btn {
+    width: 44px;
+    height: 28px;
+  }
+
   /* Log stream */
   .log-stream {
     border-radius: var(--radius-md);
