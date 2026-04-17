@@ -68,8 +68,11 @@
 
   /* Focus */
   --focus: rgba(255, 92, 92, 0.2);
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
-  --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
+  --focus-ring:
+    0 0 0 2px var(--bg),
+    0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
+  --focus-glow:
+    0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
 
   /* Grid */
   --grid-line: rgba(255, 255, 255, 0.03);
@@ -80,8 +83,10 @@
 
   /* Typography */
   --mono:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, monospace;
+  --font-body:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-body);
 
   /* Shadows - Subtle, layered depth */
@@ -116,7 +121,7 @@
   --bg-accent: #f1f3f5;
   --bg-elevated: #ffffff;
   --bg-hover: #eceef0;
-  --bg-muted: #eceef0;
+  --bg-muted: #fefefe;
   --bg-content: #f1f3f5;
 
   --card: #ffffff;
@@ -131,9 +136,9 @@
   --chrome: rgba(248, 249, 250, 0.96);
   --chrome-strong: rgba(248, 249, 250, 0.98);
 
-  --text: #3c3c43;
-  --text-strong: #1a1a1e;
-  --chat-text: #3c3c43;
+  --text: #1e1f1f;
+  --text-strong: #1e1f1f;
+  --chat-text: #1e1f1f;
   --muted: #6e6e73;
   --muted-strong: #545458;
   --muted-foreground: #6e6e73;
@@ -172,8 +177,11 @@
   --info: #2563eb;
 
   --focus: rgba(220, 38, 38, 0.15);
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 70%, transparent);
-  --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 12px var(--accent-glow);
+  --focus-ring:
+    0 0 0 2px var(--bg),
+    0 0 0 3px color-mix(in srgb, var(--ring) 70%, transparent);
+  --focus-glow:
+    0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 12px var(--accent-glow);
 
   --grid-line: rgba(0, 0, 0, 0.04);
 
@@ -220,8 +228,11 @@
 
   /* Focus — crimson ring */
   --focus: rgba(229, 36, 59, 0.2);
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 70%, transparent);
-  --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
+  --focus-ring:
+    0 0 0 2px var(--bg),
+    0 0 0 3px color-mix(in srgb, var(--ring) 70%, transparent);
+  --focus-glow:
+    0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
 
   /* Surfaces — true black canvas */
   --bg: #080808;
@@ -356,8 +367,11 @@
 
   /* Focus — match chocolate accent, slightly higher ring opacity for dark bg visibility */
   --focus: rgba(180, 120, 64, 0.2);
-  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
-  --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
+  --focus-ring:
+    0 0 0 2px var(--bg),
+    0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
+  --focus-glow:
+    0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
 
   /* Surfaces — deep cocoa tones */
   --bg: #1a1210;
@@ -495,10 +509,14 @@ body {
 /* Theme transition */
 @keyframes theme-circle-transition {
   0% {
-    clip-path: circle(0% at var(--theme-switch-x, 50%) var(--theme-switch-y, 50%));
+    clip-path: circle(
+      0% at var(--theme-switch-x, 50%) var(--theme-switch-y, 50%)
+    );
   }
   100% {
-    clip-path: circle(150% at var(--theme-switch-x, 50%) var(--theme-switch-y, 50%));
+    clip-path: circle(
+      150% at var(--theme-switch-x, 50%) var(--theme-switch-y, 50%)
+    );
   }
 }
 
@@ -628,7 +646,12 @@ select {
 
 /* Skeleton loading primitives */
 .skeleton {
-  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-hover) 50%, var(--bg-muted) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--bg-muted) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-muted) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-md);
