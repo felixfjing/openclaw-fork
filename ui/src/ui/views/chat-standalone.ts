@@ -20,6 +20,7 @@ import {
   buildChatItems,
   syncToolCardExpansionState,
 } from "./chat-standalone/items.ts";
+import { renderLoadingState } from "./chat-standalone/loading.ts";
 import {
   renderAttachmentPreview,
   renderCompactionIndicator,
@@ -137,51 +138,7 @@ function renderChatThread(
       @click=${handleCodeBlockCopy}
     >
       <div class="chat-thread-inner">
-        ${props.loading
-          ? html`
-              <div class="chat-loading-skeleton" aria-label="Loading chat">
-                <div class="chat-line assistant">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div
-                        class="skeleton skeleton-line skeleton-line--long"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div
-                        class="skeleton skeleton-line skeleton-line--medium"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div
-                        class="skeleton skeleton-line skeleton-line--short"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="chat-line user" style="margin-top: 12px">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div
-                        class="skeleton skeleton-line skeleton-line--medium"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="chat-line assistant" style="margin-top: 12px">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div
-                        class="skeleton skeleton-line skeleton-line--long"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div
-                        class="skeleton skeleton-line skeleton-line--short"
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `
-          : nothing}
+        ${props.loading ? renderLoadingState() : nothing}
         ${isEmpty && !chatViewState.searchOpen
           ? renderEmptyState(props)
           : nothing}
