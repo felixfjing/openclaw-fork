@@ -226,8 +226,12 @@ describe("tool-cards", () => {
       container,
     );
 
-    const iframe = container.querySelector<HTMLIFrameElement>(".chat-tool-card__preview-frame");
-    expect(iframe?.getAttribute("sandbox")).toBe("allow-scripts allow-same-origin");
+    const iframe = container.querySelector<HTMLIFrameElement>(
+      ".chat-tool-card__preview-frame",
+    );
+    expect(iframe?.getAttribute("sandbox")).toBe(
+      "allow-scripts allow-same-origin",
+    );
   });
 
   it("does not extract inline-html canvas payloads into canvas previews", () => {
@@ -298,7 +302,7 @@ describe("tool-cards", () => {
     );
 
     expect(container.textContent).toContain("Tool input");
-    expect(container.textContent).toContain("Tool output");
+    expect(container.textContent).toContain("执行结果");
     expect(container.textContent).toContain("https://example.com");
     expect(container.textContent).toContain("Opened page");
   });
@@ -320,7 +324,7 @@ describe("tool-cards", () => {
 
     expect(container.textContent).toContain("Tool input");
     expect(container.textContent).toContain('"thread": true');
-    expect(container.textContent).not.toContain("Tool output");
+    expect(container.textContent).not.toContain("执行结果");
     expect(container.textContent).not.toContain("No output");
   });
 
@@ -339,9 +343,11 @@ describe("tool-cards", () => {
       container,
     );
 
-    expect(container.textContent).toContain("Tool call");
+    expect(container.textContent).toContain("执行命令");
     expect(container.textContent).not.toContain("Tool input");
-    const summaryButton = container.querySelector("button.chat-tool-msg-summary");
+    const summaryButton = container.querySelector(
+      "button.chat-tool-msg-summary",
+    );
     expect(summaryButton).not.toBeNull();
     expect(summaryButton?.getAttribute("aria-expanded")).toBe("false");
   });
@@ -357,7 +363,8 @@ describe("tool-cards", () => {
             kind: "canvas",
             source: {
               type: "html",
-              content: '<div onclick="alert(1)">front<script>window.bad = true;</script></div>',
+              content:
+                '<div onclick="alert(1)">front<script>window.bad = true;</script></div>',
             },
             presentation: {
               target: "tool_card",
@@ -377,10 +384,16 @@ describe("tool-cards", () => {
       container,
     );
 
-    const rawToggle = container.querySelector<HTMLButtonElement>(".chat-tool-card__raw-toggle");
-    const rawBody = container.querySelector<HTMLElement>(".chat-tool-card__raw-body");
+    const rawToggle = container.querySelector<HTMLButtonElement>(
+      ".chat-tool-card__raw-toggle",
+    );
+    const rawBody = container.querySelector<HTMLElement>(
+      ".chat-tool-card__raw-body",
+    );
 
-    expect(container.querySelector(".chat-tool-card__preview-frame")).toBeNull();
+    expect(
+      container.querySelector(".chat-tool-card__preview-frame"),
+    ).toBeNull();
     expect(rawToggle?.getAttribute("aria-expanded")).toBe("false");
     expect(rawBody?.hidden).toBe(true);
 
@@ -425,11 +438,17 @@ describe("tool-cards", () => {
       container,
     );
 
-    const rawToggle = container.querySelector<HTMLButtonElement>(".chat-tool-card__raw-toggle");
-    const rawBody = container.querySelector<HTMLElement>(".chat-tool-card__raw-body");
+    const rawToggle = container.querySelector<HTMLButtonElement>(
+      ".chat-tool-card__raw-toggle",
+    );
+    const rawBody = container.querySelector<HTMLElement>(
+      ".chat-tool-card__raw-body",
+    );
 
     expect(container.textContent).toContain("Counter demo");
-    expect(container.querySelector(".chat-tool-card__preview-frame")).toBeNull();
+    expect(
+      container.querySelector(".chat-tool-card__preview-frame"),
+    ).toBeNull();
     expect(rawToggle?.getAttribute("aria-expanded")).toBe("false");
     expect(rawBody?.hidden).toBe(true);
 
@@ -476,7 +495,9 @@ describe("tool-cards", () => {
       container,
     );
 
-    const sidebarButton = container.querySelector<HTMLButtonElement>(".chat-tool-card__action-btn");
+    const sidebarButton = container.querySelector<HTMLButtonElement>(
+      ".chat-tool-card__action-btn",
+    );
     sidebarButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(sidebarButton).not.toBeNull();

@@ -1264,9 +1264,9 @@ function renderGroupedMessage(
   const toolMessageLabel =
     singleToolCard && !markdown && !hasImages
       ? singleToolCard.outputText?.trim()
-        ? "Tool output"
-        : "Tool call"
-      : "Tool output";
+        ? "执行结果"
+        : "执行命令"
+      : "执行结果";
 
   const hasActions = canCopyMarkdown || canExpand;
 

@@ -33,9 +33,340 @@
 .chat--standalone .chat-bubble {
   background: transparent;
 }
-
-.chat--standalone .chat-group-messages .chat-bubble {
+.chat--standalone
+  .chat-group.assistant
+  .chat-group-messages
+  .chat-bubble.fade-in {
+  padding: 10px 0;
+  border: none;
   background: transparent;
+}
+.chat--standalone .chat-group.tool .chat-group-messages {
+  gap: 8px;
+}
+
+.chat--standalone .chat-group.tool .chat-group-messages .chat-group-footer {
+  display: none;
+}
+.chat--standalone .chat-group.tool .chat-group-messages .chat-bubble.fade-in {
+  width: 100%;
+  align-self: stretch;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in:hover {
+  background: #fff;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-collapse,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-body,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__preview,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__raw,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 4px 4px 0 0;
+  background: #f5f7fa;
+  color: #1e1f1f;
+  gap: 8px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary::before {
+  margin-right: 2px;
+  color: #8e9091;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary__icon {
+  width: 8px;
+  height: 8px;
+  color: #00b42a;
+  opacity: 1;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary__icon
+  svg {
+  width: 8px;
+  height: 8px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary__label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: #1e1f1f;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary__names,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-summary__preview {
+  font-size: 12px;
+  line-height: 20px;
+  color: #8e9091;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-msg-body {
+  padding: 8px 12px 12px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card {
+  margin-top: 8px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: none;
+  max-height: none;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card:first-child {
+  margin-top: 0;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__header {
+  min-height: 32px;
+  padding: 4px 12px;
+  border-bottom: 1px solid #e6e8eb;
+  background: #f5f7fa;
+  align-items: center;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__title {
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  color: #1e1f1f;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__icon {
+  width: 16px;
+  height: 16px;
+  color: #1e1f1f;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__icon
+  svg {
+  width: 16px;
+  height: 16px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__detail {
+  padding: 8px 12px 0;
+  color: #8e9091;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__preview,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__raw {
+  margin-top: 8px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block {
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-header {
+  min-height: 32px;
+  padding: 4px 12px;
+  border-bottom: 1px solid #e6e8eb;
+  background: #f5f7fa;
+  align-items: center;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-label {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  color: #1e1f1f;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-icon {
+  width: 8px;
+  height: 8px;
+  color: #00b42a;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-icon
+  svg {
+  width: 8px;
+  height: 8px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-preview,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-content,
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__block-empty {
+  margin: 0;
+  padding: 8px 12px 12px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__raw-toggle {
+  min-height: 32px;
+  padding: 4px 12px;
+  border-color: #e6e8eb;
+  background: #f5f7fa;
+  color: #1e1f1f;
+  border-radius: 4px;
+}
+
+.chat--standalone
+  .chat-group.tool
+  .chat-group-messages
+  .chat-bubble.fade-in
+  .chat-tool-card__raw-body {
+  padding-top: 8px;
 }
 
 @supports (backdrop-filter: blur(1px)) {

@@ -1,14 +1,20 @@
 import { html, nothing } from "lit";
 import { extractCanvasFromText } from "../../../../src/chat/canvas-render.js";
 import { resolveCanvasIframeUrl } from "../canvas-url.ts";
-import { resolveEmbedSandbox, type EmbedSandboxMode } from "../embed-sandbox.ts";
+import {
+  resolveEmbedSandbox,
+  type EmbedSandboxMode,
+} from "../embed-sandbox.ts";
 import { icons } from "../icons.ts";
 import type { SidebarContent } from "../sidebar-content.ts";
 import { formatToolDetail, resolveToolDisplay } from "../tool-display.ts";
 import type { ToolCard } from "../types/chat-types.ts";
 import { extractTextCached } from "./message-extract.ts";
 import { isToolResultMessage } from "./message-normalizer.ts";
-import { formatToolOutputForSidebar, getTruncatedPreview } from "./tool-helpers.ts";
+import {
+  formatToolOutputForSidebar,
+  getTruncatedPreview,
+} from "./tool-helpers.ts";
 
 export type ToolPreview = NonNullable<ToolCard["preview"]>;
 
@@ -93,7 +99,11 @@ function serializeToolInput(args: unknown): string | undefined {
   try {
     return JSON.stringify(args, null, 2);
   } catch {
-    if (typeof args === "number" || typeof args === "boolean" || typeof args === "bigint") {
+    if (
+      typeof args === "number" ||
+      typeof args === "boolean" ||
+      typeof args === "bigint"
+    ) {
       return String(args);
     }
     if (typeof args === "symbol") {
@@ -124,7 +134,11 @@ ${text}
 \`\`\``;
 }
 
-function findLatestCard(cards: ToolCard[], id: string, name: string): ToolCard | undefined {
+function findLatestCard(
+  cards: ToolCard[],
+  id: string,
+  name: string,
+): ToolCard | undefined {
   for (let i = cards.length - 1; i >= 0; i--) {
     const card = cards[i];
     if (!card) {
@@ -137,7 +151,10 @@ function findLatestCard(cards: ToolCard[], id: string, name: string): ToolCard |
   return undefined;
 }
 
-export function extractToolCards(message: unknown, prefix = "tool"): ToolCard[] {
+export function extractToolCards(
+  message: unknown,
+  prefix = "tool",
+): ToolCard[] {
   const m = message as Record<string, unknown>;
   const content = normalizeContent(m.content);
   const cards: ToolCard[] = [];
@@ -222,9 +239,13 @@ export function buildToolCardSidebarContent(card: ToolCard): string {
   }
 
   if (card.outputText?.trim()) {
-    sections.push(`### Tool output\n${formatToolOutputForSidebar(card.outputText)}`);
+    sections.push(
+      `### Tool output\n${formatToolOutputForSidebar(card.outputText)}`,
+    );
   } else {
-    sections.push(`### Tool output\n*No output — tool completed successfully.*`);
+    sections.push(
+      `### Tool output\n*No output — tool completed successfully.*`,
+    );
   }
 
   return sections.join("\n\n");
@@ -280,9 +301,15 @@ export function renderToolPreview(
     return nothing;
   }
   return html`
-    <div class="chat-tool-card__preview" data-kind="canvas" data-surface=${surface}>
+    <div
+      class="chat-tool-card__preview"
+      data-kind="canvas"
+      data-surface=${surface}
+    >
       <div class="chat-tool-card__preview-header">
-        <span class="chat-tool-card__preview-label">${preview.title?.trim() || "Canvas"}</span>
+        <span class="chat-tool-card__preview-label"
+          >${preview.title?.trim() || "Canvas"}</span
+        >
       </div>
       <div class="chat-tool-card__preview-panel" data-side="canvas">
         ${renderPreviewFrame({
@@ -314,7 +341,12 @@ export function buildPreviewSidebarContent(
   preview: ToolPreview,
   rawText?: string | null,
 ): SidebarContent | null {
-  if (preview.kind !== "canvas" || preview.render !== "url" || !preview.viewId || !preview.url) {
+  if (
+    preview.kind !== "canvas" ||
+    preview.render !== "url" ||
+    !preview.viewId ||
+    !preview.url
+  ) {
     return null;
   }
   return {
@@ -322,7 +354,9 @@ export function buildPreviewSidebarContent(
     docId: preview.viewId,
     entryUrl: preview.url,
     ...(preview.title ? { title: preview.title } : {}),
-    ...(preview.preferredHeight ? { preferredHeight: preview.preferredHeight } : {}),
+    ...(preview.preferredHeight
+      ? { preferredHeight: preview.preferredHeight }
+      : {}),
     ...(rawText ? { rawText } : {}),
   };
 }
@@ -337,7 +371,9 @@ export function renderRawOutputToggle(text: string) {
         @click=${handleRawDetailsToggle}
       >
         <span>Raw details</span>
-        <span class="chat-tool-card__raw-toggle-icon">${icons.chevronDown}</span>
+        <span class="chat-tool-card__raw-toggle-icon"
+          >${icons.chevronDown}</span
+        >
       </button>
       <div class="chat-tool-card__raw-body" hidden>
         ${renderToolDataBlock({
@@ -358,7 +394,11 @@ function renderToolDataBlock(params: {
 }) {
   const { label, text, expanded, empty } = params;
   return html`
-    <div class="chat-tool-card__block ${expanded ? "chat-tool-card__block--expanded" : ""}">
+    <div
+      class="chat-tool-card__block ${expanded
+        ? "chat-tool-card__block--expanded"
+        : ""}"
+    >
       <div class="chat-tool-card__block-header">
         <span class="chat-tool-card__block-icon">${icons.zap}</span>
         <span class="chat-tool-card__block-label">${label}</span>
@@ -366,7 +406,9 @@ function renderToolDataBlock(params: {
       ${empty
         ? html`<div class="chat-tool-card__block-empty muted">${text}</div>`
         : expanded
-          ? html`<pre class="chat-tool-card__block-content"><code>${text}</code></pre>`
+          ? html`<pre
+              class="chat-tool-card__block-content"
+            ><code>${text}</code></pre>`
           : html`<div class="chat-tool-card__block-preview mono">
               ${getTruncatedPreview(text)}
             </div>`}
@@ -407,7 +449,7 @@ export function renderToolCard(
   },
 ) {
   const hasOutput = Boolean(card.outputText?.trim());
-  const previewLabel = hasOutput ? "Tool output" : "Tool call";
+  const previewLabel = hasOutput ? "执行结果" : "执行命令";
 
   return html`
     <div
@@ -455,7 +497,8 @@ export function renderExpandedToolCardContent(
       ? buildPreviewSidebarContent(card.preview, card.outputText)
       : null;
   const sidebarActionContent =
-    previewSidebarContent ?? buildSidebarContent(buildToolCardSidebarContent(card));
+    previewSidebarContent ??
+    buildSidebarContent(buildToolCardSidebarContent(card));
   const visiblePreview = card.preview
     ? renderToolPreview(card.preview, "chat_tool", {
         onOpenSidebar,
@@ -483,13 +526,17 @@ export function renderExpandedToolCardContent(
                   title="Open in the side panel"
                   aria-label="Open tool details in side panel"
                 >
-                  <span class="chat-tool-card__action-icon">${icons.panelRightOpen}</span>
+                  <span class="chat-tool-card__action-icon"
+                    >${icons.panelRightOpen}</span
+                  >
                 </button>
               </div>
             `
           : nothing}
       </div>
-      ${detail ? html`<div class="chat-tool-card__detail">${detail}</div>` : nothing}
+      ${detail
+        ? html`<div class="chat-tool-card__detail">${detail}</div>`
+        : nothing}
       ${hasInput
         ? renderToolDataBlock({
             label: "Tool input",
@@ -525,10 +572,14 @@ export function renderToolCardSidebar(
     preview?.kind === "canvas"
       ? buildPreviewSidebarContent(preview, card.outputText)
       : buildSidebarContent(buildToolCardSidebarContent(card));
-  const actionContent = sidebarContent ?? buildSidebarContent(buildToolCardSidebarContent(card));
+  const actionContent =
+    sidebarContent ?? buildSidebarContent(buildToolCardSidebarContent(card));
   const canClick = Boolean(onOpenSidebar);
-  const handleClick = canClick ? () => onOpenSidebar?.(actionContent) : undefined;
-  const isShort = hasText && !hasPreview && (card.outputText?.length ?? 0) <= 240;
+  const handleClick = canClick
+    ? () => onOpenSidebar?.(actionContent)
+    : undefined;
+  const isShort =
+    hasText && !hasPreview && (card.outputText?.length ?? 0) <= 240;
   const showCollapsed = hasText && !hasPreview && !isShort;
   const showInline = hasText && !hasPreview && isShort;
   const isEmpty = !hasText && !hasPreview;
@@ -563,8 +614,12 @@ export function renderToolCardSidebar(
           ? html`<span class="chat-tool-card__status">${icons.check}</span>`
           : nothing}
       </div>
-      ${detail ? html`<div class="chat-tool-card__detail">${detail}</div>` : nothing}
-      ${isEmpty ? html`<div class="chat-tool-card__status-text muted">Completed</div>` : nothing}
+      ${detail
+        ? html`<div class="chat-tool-card__detail">${detail}</div>`
+        : nothing}
+      ${isEmpty
+        ? html`<div class="chat-tool-card__status-text muted">Completed</div>`
+        : nothing}
       ${preview
         ? html`${renderToolPreview(preview, "chat_tool", {
             onOpenSidebar,
@@ -579,7 +634,9 @@ export function renderToolCardSidebar(
           </div>`
         : nothing}
       ${showInline
-        ? html`<div class="chat-tool-card__inline mono">${card.outputText}</div>`
+        ? html`<div class="chat-tool-card__inline mono">
+            ${card.outputText}
+          </div>`
         : nothing}
     </div>
   `;
