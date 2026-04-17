@@ -1,0 +1,105 @@
+{
+  "id": "gildata",
+  "enabledByDefault": true,
+  "loadAtStartup": true,
+  "providers": ["gildata"],
+  "providerAuthEnvVars": {
+    "gildata": ["GILDATA_API_TOKEN", "warrenq_USERNAME", "warrenq_PASSWORD"]
+  },
+  "providerAuthChoices": [
+    {
+      "provider": "gildata",
+      "method": "warrenq",
+      "choiceId": "warrenq",
+      "choiceLabel": "warrenq完整认证",
+      "choiceHint": "warrenq C#终端登录认证",
+      "optionKey": "autoLogin",
+      "cliFlag": "--warrenq-auto-login",
+      "cliOption": "--warrenq-auto-login",
+      "cliDescription": "Enable warrenq auto-login",
+      "groupId": "gildata",
+      "groupLabel": "Gildata",
+      "groupHint": "Gildata AI service provider"
+    },
+    {
+      "provider": "gildata",
+      "method": "api-key",
+      "choiceId": "api-key",
+      "choiceLabel": "API Key",
+      "choiceHint": "Direct API key authentication",
+      "optionKey": "apiKey",
+      "cliFlag": "--gildata-api-key",
+      "cliOption": "--gildata-api-key <key>",
+      "cliDescription": "Gildata API key"
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "autoLogin": {
+        "type": "boolean",
+        "default": false,
+        "description": "启用warrenq自动登录认证"
+      },
+      "loginBaseUrl": {
+        "type": "string",
+        "format": "uri",
+        "default": "https://pure.warrenq.com",
+        "description": "warrenq登录API基础URL"
+      },
+      "chatBaseUrl": {
+        "type": "string",
+        "format": "uri",
+        "default": "http://aigwtest.in.gildata.com:31088/nlp-dataagent-srv/v1/chat/completions",
+        "description": "Gildata聊天API基础URL"
+      },
+      "username": {
+        "type": "string",
+        "description": "warrenq用户名（用于自动登录）"
+      },
+      "password": {
+        "type": "string",
+        "description": "warrenq密码（用于自动登录）"
+      },
+      "agentId": {
+        "type": "string",
+        "default": "gildata-claw",
+        "description": "聊天请求中的Agent-Id固定标识"
+      },
+      "userId": {
+        "type": "string",
+        "description": "用户ID（从warrenq响应中解析）"
+      },
+      "queryId": {
+        "type": "string",
+        "description": "查询ID（UUID格式）"
+      },
+      "sessionId": {
+        "type": "string",
+        "description": "会话ID"
+      },
+      "tenantId": {
+        "type": "string",
+        "description": "租户ID（从warrenq响应中解析）"
+      },
+      "moduleId": {
+        "type": "string",
+        "default": "claw",
+        "description": "模块ID（聊天请求中的X-Module-Id）"
+      },
+      "contentType": {
+        "type": "string",
+        "default": "application/json",
+        "description": "Content-Type请求头"
+      },
+      "customHeaders": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "自定义HTTP请求头"
+      }
+    }
+  }
+}

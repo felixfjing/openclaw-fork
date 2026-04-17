@@ -191,6 +191,10 @@ function shouldConsiderForGatewayStartup(params: {
   if (isGatewayStartupSidecar(params.plugin)) {
     return true;
   }
+  // Provider plugins that explicitly opt into gateway startup loading； (e.g. to register HTTP routes before the full provider loads on-demand).
+  if (params.plugin.loadAtStartup) {
+    return true;
+  }
   if (!isGatewayStartupMemoryPlugin(params.plugin)) {
     return false;
   }

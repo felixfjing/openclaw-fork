@@ -361,6 +361,13 @@ export function mergeModelProviderRequestOverrides(
   return merged;
 }
 
+// OpenAI SDK 会自动拼接的路径后缀，需要在归一化时剥离； 避免用户配置了完整端点 URL（如 .../v1/chat/completions）导致路径重复
+const OPENAI_SDK_PATH_SUFFIXES = [
+  "/chat/completions",
+  "/completions",
+  "/responses",
+] as const;
+
 export function normalizeBaseUrl(baseUrl: string | undefined, fallback: string): string;
 export function normalizeBaseUrl(
   baseUrl: string | undefined,
@@ -370,11 +377,20 @@ export function normalizeBaseUrl(
   baseUrl: string | undefined,
   fallback?: string,
 ): string | undefined {
-  const raw = baseUrl?.trim() || fallback?.trim();
+  let raw = baseUrl?.trim() || fallback?.trim();
   if (!raw) {
     return undefined;
   }
-  return raw.replace(/\/+$/, "");
+  // 剥离尾斜杠
+  raw = raw.replace(/\/+$/, "");
+  // 剥离 OpenAI SDK 自动拼接的路径后缀
+  for (const suffix of OPENAI_SDK_PATH_SUFFIXES) {
+    if (raw.toLowerCase().endsWith(suffix)) {
+      raw = raw.slice(0, -suffix.length);
+      break;
+    }
+  }
+  return raw;
 }
 
 export function mergeProviderRequestHeaders(

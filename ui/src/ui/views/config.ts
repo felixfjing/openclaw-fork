@@ -15,6 +15,7 @@ import {
   type JsonSchema,
 } from "./config-form.shared.ts";
 import { analyzeConfigSchema, renderConfigForm, SECTION_META } from "./config-form.ts";
+import "./warrenq-login.js";
 
 const BORDER_RADIUS_LABELS: Record<BorderRadiusStop, string> = {
   0: "None",
@@ -576,6 +577,7 @@ function renderAppearanceSection(props: ConfigProps) {
       <div class="settings-appearance__section">
         <h3 class="settings-appearance__heading">Theme</h3>
         <p class="settings-appearance__hint">Choose a theme family.</p>
+        <p class="settings-appearance__hint">Choose a theme family.</p>
         <div class="settings-theme-grid">
           ${THEME_OPTIONS.map(
             (opt) => html`
@@ -655,6 +657,19 @@ function renderAppearanceSection(props: ConfigProps) {
               `
             : nothing}
         </div>
+      </div>
+
+      <div class="settings-appearance__section">
+        <h3 class="settings-appearance__heading">Warrenq Login</h3>
+        <p class="settings-appearance__hint">Login to Warrenq for Gildata provider authentication.</p>
+        <warrenq-login
+          .basePath=${props.gatewayUrl ? new URL(props.gatewayUrl).pathname.replace(/\/$/, "") : ""}
+          @warrenq-login-success=${() => {
+            if (props.onReload) {
+              props.onReload();
+            }
+          }}
+        ></warrenq-login>
       </div>
     </div>
   `;

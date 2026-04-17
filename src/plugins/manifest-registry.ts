@@ -75,6 +75,8 @@ export type PluginManifestRecord = {
   description?: string;
   version?: string;
   enabledByDefault?: boolean;
+  /** Force-load this plugin at gateway startup (e.g. to register HTTP routes). */
+  loadAtStartup?: boolean;
   autoEnableWhenConfiguredProviders?: string[];
   legacyPluginIds?: string[];
   format?: PluginFormat;
@@ -316,6 +318,7 @@ function buildRecord(params: {
       normalizeOptionalString(params.manifest.description) ?? params.candidate.packageDescription,
     version: normalizeOptionalString(params.manifest.version) ?? params.candidate.packageVersion,
     enabledByDefault: params.manifest.enabledByDefault === true ? true : undefined,
+    loadAtStartup: params.manifest.loadAtStartup === true ? true : undefined,
     autoEnableWhenConfiguredProviders: params.manifest.autoEnableWhenConfiguredProviders,
     legacyPluginIds: params.manifest.legacyPluginIds,
     format: params.candidate.format ?? "openclaw",
