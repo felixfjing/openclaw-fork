@@ -142,6 +142,8 @@ export type PluginManifest = {
   id: string;
   configSchema: Record<string, unknown>;
   enabledByDefault?: boolean;
+  /** Force-load this provider plugin at gateway startup (e.g. to register HTTP routes). */
+  loadAtStartup?: boolean;
   /** Legacy plugin ids that should normalize to this plugin id. */
   legacyPluginIds?: string[];
   /** Provider ids that should auto-enable this plugin when referenced in auth/config/models. */
@@ -685,6 +687,7 @@ export function loadPluginManifest(
 
   const kind = parsePluginKind(raw.kind);
   const enabledByDefault = raw.enabledByDefault === true;
+  const loadAtStartup = raw.loadAtStartup === true;
   const legacyPluginIds = normalizeTrimmedStringList(raw.legacyPluginIds);
   const autoEnableWhenConfiguredProviders = normalizeTrimmedStringList(
     raw.autoEnableWhenConfiguredProviders,
@@ -721,6 +724,7 @@ export function loadPluginManifest(
       id,
       configSchema,
       ...(enabledByDefault ? { enabledByDefault } : {}),
+      ...(loadAtStartup ? { loadAtStartup } : {}),
       ...(legacyPluginIds.length > 0 ? { legacyPluginIds } : {}),
       ...(autoEnableWhenConfiguredProviders.length > 0
         ? { autoEnableWhenConfiguredProviders }
