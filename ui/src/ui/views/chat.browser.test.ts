@@ -2,6 +2,10 @@ import { render } from "lit";
 import { afterEach, describe, expect, it } from "vitest";
 import "../../test-helpers/load-styles.ts";
 import { renderChat, type ChatProps } from "./chat.ts";
+import {
+  renderChatStandalone,
+  type ChatProps as StandaloneChatProps,
+} from "./chat-standalone.ts";
 
 const contextNoticeSessions: ChatProps["sessions"] = {
   ts: 0,
@@ -48,7 +52,11 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
       ts: 0,
       path: "",
       count: 1,
-      defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: null },
+      defaults: {
+        modelProvider: "openai",
+        model: "gpt-5",
+        contextTokens: null,
+      },
       sessions: [
         {
           key: "main",
@@ -71,6 +79,29 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
     agentsList: null,
     currentAgentId: "",
     onAgentChange: () => undefined,
+    ...overrides,
+  };
+}
+
+function createStandaloneProps(
+  overrides: Partial<StandaloneChatProps> = {},
+): StandaloneChatProps {
+  return {
+    ...createProps(),
+    agentsList: null,
+    currentAgentId: "main",
+    onAgentChange: () => undefined,
+    modelSelectState: {
+      currentOverride: "openai/gpt-5-mini",
+      defaultModel: "openai/gpt-5",
+      defaultDisplay: "GPT-5 · openai",
+      defaultLabel: "Default model",
+      options: [
+        { value: "openai/gpt-5-mini", label: "GPT-5 Mini · openai" },
+        { value: "openai/gpt-5", label: "GPT-5 · openai" },
+      ],
+    },
+    onModelChange: () => undefined,
     ...overrides,
   };
 }
@@ -124,5 +155,26 @@ describe("chat context notice", () => {
     expect(icon.getAttribute("width")).toBe("16");
     expect(icon.getAttribute("height")).toBe("16");
     expect(icon.querySelector("path")).not.toBeNull();
+  });
+});
+
+describe("chat standalone model picker", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("renders the footer selector as a model picker", () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    render(renderChatStandalone(createStandaloneProps()), container);
+
+    const modelSelect = container.querySelector<HTMLSelectElement>(
+      'select[data-chat-model-select="true"]',
+    );
+    expect(modelSelect).not.toBeNull();
+    expect(modelSelect?.value).toBe("openai/gpt-5-mini");
+    expect(
+      container.querySelector(".agent-chat__agent-select-label")?.textContent,
+    ).toBe("Model");
   });
 });

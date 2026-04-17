@@ -1,4 +1,8 @@
-import type { CompactionStatus, FallbackStatus } from "../../app-tool-stream.ts";
+import type {
+  CompactionStatus,
+  FallbackStatus,
+} from "../../app-tool-stream.ts";
+import type { ChatModelSelectState } from "../../chat-model-select-state.ts";
 import type { ChatSideResult } from "../../chat-claw/side-result.ts";
 import type { EmbedSandboxMode } from "../../embed-sandbox.ts";
 import type { SidebarContent } from "../../sidebar-content.ts";
@@ -59,11 +63,17 @@ export type ChatProps = {
   onNewSession: () => void;
   onClearHistory?: () => void;
   agentsList: {
-    agents: Array<{ id: string; name?: string; identity?: { name?: string; avatarUrl?: string } }>;
+    agents: Array<{
+      id: string;
+      name?: string;
+      identity?: { name?: string; avatarUrl?: string };
+    }>;
     defaultId?: string;
   } | null;
   currentAgentId: string;
   onAgentChange: (agentId: string) => void;
+  modelSelectState?: ChatModelSelectState | null;
+  onModelChange?: (modelId: string) => void;
   onNavigateToAgent?: () => void;
   onSessionSelect?: (sessionKey: string) => void;
   onOpenSidebar?: (content: SidebarContent) => void;

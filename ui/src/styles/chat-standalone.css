@@ -844,20 +844,28 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-width: 200px;
-  height: 24px;
-  padding: 0 8px;
-  border: none;
-  border-radius: 4px;
+  gap: 6px;
+  min-width: 210px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 8px;
   background: var(--card);
   color: var(--text);
   box-sizing: border-box;
+  box-shadow: none;
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
 }
 
 .chat--standalone .agent-chat__agent-select-label {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -874,10 +882,21 @@
   line-height: 1.5;
   outline: none;
   padding: 0;
+  cursor: pointer;
 }
 
 .chat--standalone .agent-chat__agent-select select:disabled {
   cursor: not-allowed;
+}
+
+.chat--standalone .agent-chat__agent-select:hover {
+  background: color-mix(in srgb, var(--card) 88%, var(--bg-hover));
+  border-color: color-mix(in srgb, var(--border) 50%, var(--accent));
+}
+
+.chat--standalone .agent-chat__agent-select:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .chat--standalone .agent-chat__agent-select-icon {
@@ -981,7 +1000,7 @@
 
   .chat--standalone .agent-chat__agent-select {
     min-width: 160px;
-    height: 24px;
+    height: 28px;
     padding: 0 8px;
   }
 

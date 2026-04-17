@@ -17,8 +17,10 @@ import {
   resolveAssistantAttachmentAuthToken,
   renderSidebarConnectionStatus,
   renderTopbarThemeModeToggle,
+  switchChatModel,
   switchChatSession,
 } from "./app-render.helpers.ts";
+import { resolveChatModelSelectState } from "./chat-model-select-state.ts";
 import { warnQueryToken } from "./app-settings.ts";
 import type { AppViewState } from "./app-view-state.ts";
 import {
@@ -643,6 +645,10 @@ export function renderApp(state: AppViewState) {
     currentAgentId: resolvedAgentId ?? "main",
     onAgentChange: (agentId) => {
       switchChatSession(state, buildAgentMainSessionKey({ agentId }));
+    },
+    modelSelectState: resolveChatModelSelectState(state),
+    onModelChange: (modelId) => {
+      void switchChatModel(state, modelId);
     },
     onNavigateToAgent: () => {
       state.agentsSelectedId = resolvedAgentId;

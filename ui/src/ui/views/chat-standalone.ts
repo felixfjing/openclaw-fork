@@ -74,43 +74,46 @@ function handleCodeBlockCopy(e: Event): void {
   );
 }
 
-function renderAgentSelect(props: ChatProps): TemplateResult | typeof nothing {
-  const agents = props.agentsList?.agents ?? [];
-  if (!agents.length) {
+function renderModelSelect(props: ChatProps): TemplateResult | typeof nothing {
+  const modelSelectState = props.modelSelectState;
+  if (!modelSelectState || !props.onModelChange) {
     return nothing;
   }
 
-  const selectedAgent =
-    agents.find((agent) => agent.id === props.currentAgentId) ??
-    agents.find((agent) => agent.id === props.agentsList?.defaultId) ??
-    agents[0];
-
+  const selectedOption = modelSelectState.options.find(
+    (entry) => entry.value === modelSelectState.currentOverride,
+  );
   const selectedLabel =
-    selectedAgent.name ?? selectedAgent.identity?.name ?? selectedAgent.id;
+    modelSelectState.currentOverride === ""
+      ? modelSelectState.defaultLabel
+      : (selectedOption?.label ?? modelSelectState.currentOverride);
 
   return html`
     <label class="agent-chat__agent-select" title=${selectedLabel}>
-      <span class="agent-chat__agent-select-label">Agent</span>
+      <span class="agent-chat__agent-select-label">Model</span>
       <select
-        aria-label="Select agent"
+        data-chat-model-select="true"
+        aria-label="Select model"
         ?disabled=${!props.connected}
         @change=${(e: Event) =>
-          props.onAgentChange((e.target as HTMLSelectElement).value)}
+          props.onModelChange?.((e.target as HTMLSelectElement).value)}
       >
+        <option value="" ?selected=${modelSelectState.currentOverride === ""}>
+          ${modelSelectState.defaultLabel}
+        </option>
         ${repeat(
-          agents,
-          (agent) => agent.id,
-          (agent) => html`
+          modelSelectState.options,
+          (option) => option.value,
+          (option) => html`
             <option
-              value=${agent.id}
-              ?selected=${agent.id === selectedAgent.id}
+              value=${option.value}
+              ?selected=${option.value === modelSelectState.currentOverride}
             >
-              ${agent.name ?? agent.identity?.name ?? agent.id}
+              ${option.label}
             </option>
           `,
         )}
       </select>
-      <span class="agent-chat__agent-select-icon">${icons.chevronDown}</span>
     </label>
   `;
 }
@@ -461,7 +464,7 @@ export function renderChatStandalone(props: ChatProps) {
 
             <div class="agent-chat__toolbar">
               <div class="agent-chat__toolbar-left">
-                ${renderAgentSelect(props)}
+                ${renderModelSelect(props)}
                 ${tokens
                   ? html`<span class="agent-chat__token-count">${tokens}</span>`
                   : nothing}
