@@ -16,16 +16,11 @@ import {
 } from "../../chat-claw/slash-commands.ts";
 import type { GatewaySessionRow } from "../../types.ts";
 import type { PinnedMessages } from "../../chat-claw/pinned-messages.ts";
-import { formatRelativeTimestamp } from "../../format.ts";
 import { agentLogoUrl, resolveAgentAvatarUrl } from "../agents-utils.ts";
 import { detectTextDirection } from "../../text-direction.ts";
 import type { ChatProps } from "./types.ts";
 import { chatViewState } from "./state.ts";
-import {
-  selectSlashArg,
-  selectSlashCommand,
-  tabCompleteSlashCommand,
-} from "./interaction.ts";
+import { selectSlashArg, selectSlashCommand } from "./interaction.ts";
 
 const COMPACTION_TOAST_DURATION_MS = 5000;
 const FALLBACK_TOAST_DURATION_MS = 8000;
@@ -39,6 +34,19 @@ const WELCOME_SUGGESTIONS = [
 
 function resolveSessionLabel(session: GatewaySessionRow): string {
   return session.displayName ?? session.label ?? session.key;
+}
+
+function formatSessionTimestamp(timestamp: number | null | undefined): string {
+  if (!timestamp) {
+    return "暂无更新时间";
+  }
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 function renderSessionSidebar(
@@ -61,126 +69,80 @@ function renderSessionSidebar(
         );
       })
     : sessions;
-  const totalCount = props.sessions?.count ?? sessions.length;
-  const collapsed = chatViewState.sessionSidebarCollapsed;
-
   return html`
-    <aside
-      class=${`chat-session-sidebar ${collapsed ? "chat-session-sidebar--collapsed" : ""}`}
-    >
-      <div class="chat-session-sidebar__header">
-        <div class="chat-session-sidebar__title-wrap">
-          <div class="chat-session-sidebar__title">对话列表</div>
-          <div class="chat-session-sidebar__meta">
-            ${totalCount} 个 · 当前显示 ${filteredSessions.length} 个
-          </div>
-        </div>
+    <aside class="chat-session-sidebar">
+      <div class="chat-session-sidebar__new-wrap">
         <button
-          class="btn btn--ghost chat-session-sidebar__toggle"
+          class="chat-session-sidebar__new"
           type="button"
-          @click=${() => {
-            chatViewState.sessionSidebarCollapsed =
-              !chatViewState.sessionSidebarCollapsed;
-            requestUpdate();
-          }}
-          aria-label=${collapsed ? "展开会话栏" : "收起会话栏"}
-          title=${collapsed ? "展开会话栏" : "收起会话栏"}
+          ?disabled=${!props.connected}
+          @click=${() => props.onNewSession()}
+          aria-label="新建对话"
+          title="新建对话"
         >
-          <span
-            class="chat-session-sidebar__toggle-icon ${collapsed
-              ? "chat-session-sidebar__toggle-icon--collapsed"
-              : ""}"
-            >${icons.panelLeftClose}</span
-          >
+          <span class="chat-session-sidebar__new-icon">${icons.plus}</span>
+          <span class="chat-session-sidebar__new-label">新建对话</span>
         </button>
       </div>
 
-      ${collapsed
-        ? nothing
-        : html`
-            <button
-              class="btn btn--ghost chat-session-sidebar__new"
-              type="button"
-              ?disabled=${!props.connected}
-              @click=${() => props.onNewSession()}
-              aria-label="新建对话"
-              title="新建对话"
-            >
-              <span class="chat-session-sidebar__new-icon">${icons.plus}</span>
-              <span class="chat-session-sidebar__new-label">新建对话</span>
-            </button>
+      <div class="chat-session-sidebar__section-title">对话列表</div>
 
-            <label
-              class="chat-session-sidebar__search"
-              aria-label="搜索对话名称"
-            >
-              <span class="chat-session-sidebar__search-icon"
-                >${icons.search}</span
-              >
-              <input
-                class="chat-session-sidebar__search-input"
-                type="search"
-                placeholder="搜索对话名称"
-                .value=${chatViewState.sessionSidebarSearch}
-                @input=${(event: Event) => {
-                  chatViewState.sessionSidebarSearch = (
-                    event.target as HTMLInputElement
-                  ).value;
-                  requestUpdate();
-                }}
-              />
-            </label>
-          `}
-      ${collapsed
-        ? nothing
-        : html`
-            <div
-              class="chat-session-sidebar__list"
-              role="list"
-              aria-label="会话列表"
-            >
-              ${filteredSessions.length === 0
-                ? html`<div class="chat-session-sidebar__empty">
-                    ${query ? "没有匹配的会话" : "暂无历史会话"}
-                  </div>`
-                : repeat(
-                    filteredSessions,
-                    (session) => session.key,
-                    (session) => {
-                      const active = session.key === props.sessionKey;
-                      const label = resolveSessionLabel(session);
-                      const updated = session.updatedAt
-                        ? formatRelativeTimestamp(session.updatedAt)
-                        : "暂无更新时间";
-                      return html`
-                        <button
-                          class=${`chat-session-sidebar__item ${active ? "chat-session-sidebar__item--active" : ""}`}
-                          type="button"
-                          role="listitem"
-                          aria-current=${active ? "true" : "false"}
-                          title=${label}
-                          @click=${() => {
-                            if (props.onSessionSelect) {
-                              props.onSessionSelect(session.key);
-                              return;
-                            }
-                            props.onSessionKeyChange(session.key);
-                          }}
-                        >
-                          <span class="chat-session-sidebar__item-main">
-                            <span class="chat-session-sidebar__item-title"
-                              >${label}</span
-                            >
-                            <span class="chat-session-sidebar__item-subtitle"
-                              >${updated}</span
-                            >
-                          </span>
-                        </button>
-                      `;
-                    },
-                  )}
-            </div>
-          `}
+      <label class="chat-session-sidebar__search" aria-label="搜索对话名称">
+        <span class="chat-session-sidebar__search-icon">${icons.search}</span>
+        <input
+          class="chat-session-sidebar__search-input"
+          type="search"
+          placeholder="搜索对话名称"
+          .value=${chatViewState.sessionSidebarSearch}
+          @input=${(event: Event) => {
+            chatViewState.sessionSidebarSearch = (
+              event.target as HTMLInputElement
+            ).value;
+            requestUpdate();
+          }}
+        />
+      </label>
+
+      <div class="chat-session-sidebar__list" role="list" aria-label="会话列表">
+        ${filteredSessions.length === 0
+          ? html`<div class="chat-session-sidebar__empty">
+              ${query ? "没有匹配的会话" : "暂无历史会话"}
+            </div>`
+          : repeat(
+              filteredSessions,
+              (session) => session.key,
+              (session) => {
+                const active = session.key === props.sessionKey;
+                const label = resolveSessionLabel(session);
+                const updated = formatSessionTimestamp(session.updatedAt);
+                return html`
+                  <button
+                    class=${`chat-session-sidebar__item ${active ? "chat-session-sidebar__item--active" : ""}`}
+                    type="button"
+                    role="listitem"
+                    aria-current=${active ? "true" : "false"}
+                    title=${label}
+                    @click=${() => {
+                      if (props.onSessionSelect) {
+                        props.onSessionSelect(session.key);
+                        return;
+                      }
+                      props.onSessionKeyChange(session.key);
+                    }}
+                  >
+                    <span class="chat-session-sidebar__item-main">
+                      <span class="chat-session-sidebar__item-title"
+                        >${label}</span
+                      >
+                      <span class="chat-session-sidebar__item-subtitle"
+                        >${updated}</span
+                      >
+                    </span>
+                  </button>
+                `;
+              },
+            )}
+      </div>
     </aside>
   `;
 }
