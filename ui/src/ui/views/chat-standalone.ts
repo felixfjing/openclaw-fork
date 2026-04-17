@@ -18,7 +18,7 @@ import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import {
   buildChatItems,
   syncToolCardExpansionState,
-} from "./chat-line/items.ts";
+} from "./chat-standalone/items.ts";
 import {
   renderAttachmentPreview,
   renderCompactionIndicator,
@@ -29,7 +29,7 @@ import {
   renderSideResult,
   renderSlashMenu,
   renderWelcomeState,
-} from "./chat-line/renderers.ts";
+} from "./chat-standalone/renderers.ts";
 import {
   chatViewState,
   getDeletedMessages,
@@ -38,7 +38,7 @@ import {
   getPinnedMessages,
   resetChatViewState as resetChatViewStateImpl,
   cleanupChatModuleState as cleanupChatModuleStateImpl,
-} from "./chat-line/state.ts";
+} from "./chat-standalone/state.ts";
 import {
   adjustTextareaHeight,
   createChatInputHandler,
@@ -48,11 +48,11 @@ import {
   handleFileSelect,
   handlePaste,
   tokenEstimate,
-} from "./chat-line/interaction.ts";
-import type { ChatProps } from "./chat-line/types.ts";
+} from "./chat-standalone/interaction.ts";
+import type { ChatProps } from "./chat-standalone/types.ts";
 import "../components/resizable-divider.ts";
 
-export type { ChatProps } from "./chat-line/types.ts";
+export type { ChatProps } from "./chat-standalone/types.ts";
 export const resetChatViewState = resetChatViewStateImpl;
 export const cleanupChatModuleState = cleanupChatModuleStateImpl;
 
@@ -273,7 +273,7 @@ function renderChatThread(
   `;
 }
 
-export function renderChat(props: ChatProps) {
+export function renderChatStandalone(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
   const canAbort = Boolean(props.canAbort && props.onAbort);
@@ -295,13 +295,10 @@ export function renderChat(props: ChatProps) {
   const pinned = getPinnedMessages(props.sessionKey);
   const deleted = getDeletedMessages(props.sessionKey);
   const inputHistory = getInputHistory(props.sessionKey);
-  const hasAttachments = (props.attachments?.length ?? 0) > 0;
   const tokens = tokenEstimate(props.draft);
 
   const placeholder = props.connected
-    ? hasAttachments
-      ? "Add a message or paste more images..."
-      : `Message ${props.assistantName || "agent"} (Enter to send)`
+    ? "可以上传图片、文档等附件，@或“/”快速引用工具"
     : "Connect to the gateway to start chatting...";
 
   const requestUpdate = props.onRequestUpdate ?? (() => {});
@@ -343,7 +340,7 @@ export function renderChat(props: ChatProps) {
 
   return html`
     <section
-      class="card chat chat--line"
+      class="card chat chat--standalone"
       @drop=${(e: DragEvent) => handleDrop(e, props)}
       @dragover=${(e: DragEvent) => e.preventDefault()}
     >
@@ -473,9 +470,6 @@ export function renderChat(props: ChatProps) {
         : nothing}
 
       <div class="agent-chat__input">
-        <div class="agent-chat__input-hint">
-          Add images, files, @ mentions, or / commands.
-        </div>
         ${renderSlashMenu(requestUpdate, props)}
         ${renderAttachmentPreview(props)}
 

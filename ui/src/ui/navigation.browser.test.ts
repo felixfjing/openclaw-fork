@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import "../test-helpers/load-styles.ts";
-import { mountApp as mountTestApp, registerAppMountHooks } from "./test-helpers/app-mount.ts";
+import {
+  mountApp as mountTestApp,
+  registerAppMountHooks,
+} from "./test-helpers/app-mount.ts";
 
 registerAppMountHooks();
 
@@ -23,7 +26,9 @@ function findConfirmButton(app: ReturnType<typeof mountApp>) {
 async function confirmPendingGatewayChange(app: ReturnType<typeof mountApp>) {
   const confirmButton = findConfirmButton(app);
   expect(confirmButton).not.toBeUndefined();
-  confirmButton?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+  confirmButton?.dispatchEvent(
+    new MouseEvent("click", { bubbles: true, cancelable: true }),
+  );
   await app.updateComplete;
 }
 
@@ -75,9 +80,13 @@ describe("control UI routing", () => {
     const app = mountApp("/chat");
     await app.updateComplete;
 
-    const link = app.querySelector<HTMLAnchorElement>('a.nav-item[href="/channels"]');
+    const link = app.querySelector<HTMLAnchorElement>(
+      'a.nav-item[href="/channels"]',
+    );
     expect(link).not.toBeNull();
-    link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    link?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }),
+    );
 
     await app.updateComplete;
     expect(app.tab).toBe("channels");
@@ -88,7 +97,9 @@ describe("control UI routing", () => {
     const app = mountApp("/chat");
     await app.updateComplete;
 
-    const dreamsLink = app.querySelector<HTMLAnchorElement>('a.nav-item[href="/dreaming"]');
+    const dreamsLink = app.querySelector<HTMLAnchorElement>(
+      'a.nav-item[href="/dreaming"]',
+    );
     expect(dreamsLink).not.toBeNull();
   });
 
@@ -101,7 +112,7 @@ describe("control UI routing", () => {
     expect(app.querySelector(".topbar")).toBeNull();
     expect(app.querySelector(".shell-nav")).toBeNull();
     expect(app.querySelector(".content-header")).toBeNull();
-    expect(app.querySelector(".chat--line")).not.toBeNull();
+    expect(app.querySelector(".chat--standalone")).not.toBeNull();
   });
 
   it("renders the dreaming view on the /dreaming route", async () => {
@@ -126,7 +137,13 @@ describe("control UI routing", () => {
       signalEntries: [],
       promotedEntries: [],
       phases: {
-        light: { enabled: true, cron: "", managedCronPresent: false, lookbackDays: 7, limit: 20 },
+        light: {
+          enabled: true,
+          cron: "",
+          managedCronPresent: false,
+          lookbackDays: 7,
+          limit: 20,
+        },
         deep: {
           enabled: true,
           cron: "",
@@ -255,15 +272,21 @@ describe("control UI routing", () => {
     const app = mountApp("/sessions?session=agent:main:subagent:task-123");
     await app.updateComplete;
 
-    const link = app.querySelector<HTMLAnchorElement>('a.nav-item[href="/chat"]');
+    const link = app.querySelector<HTMLAnchorElement>(
+      'a.nav-item[href="/chat"]',
+    );
     expect(link).not.toBeNull();
-    link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    link?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }),
+    );
 
     await app.updateComplete;
     expect(app.tab).toBe("chat");
     expect(app.sessionKey).toBe("agent:main:subagent:task-123");
     expect(window.location.pathname).toBe("/chat");
-    expect(window.location.search).toBe("?session=agent%3Amain%3Asubagent%3Atask-123");
+    expect(window.location.search).toBe(
+      "?session=agent%3Amain%3Asubagent%3Atask-123",
+    );
   });
 
   it("keeps chat and nav usable on narrow viewports", async () => {
@@ -375,11 +398,15 @@ describe("control UI routing", () => {
     toggle?.click();
     await app.updateComplete;
 
-    const link = app.querySelector<HTMLAnchorElement>('a.nav-item[href="/channels"]');
+    const link = app.querySelector<HTMLAnchorElement>(
+      'a.nav-item[href="/channels"]',
+    );
     const shell = app.querySelector<HTMLElement>(".shell");
     expect(link).not.toBeNull();
     expect(shell?.classList.contains("shell--nav-drawer-open")).toBe(true);
-    link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    link?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }),
+    );
 
     await app.updateComplete;
     expect(app.tab).toBe("channels");
@@ -390,7 +417,8 @@ describe("control UI routing", () => {
     const app = mountApp("/chat");
     await app.updateComplete;
 
-    const initialContainer: HTMLElement | null = app.querySelector(".chat-thread");
+    const initialContainer: HTMLElement | null =
+      app.querySelector(".chat-thread");
     expect(initialContainer).not.toBeNull();
     if (!initialContainer) {
       return;
@@ -413,9 +441,16 @@ describe("control UI routing", () => {
         scrollTop = value;
       },
     });
-    initialContainer.scrollTo = ((options?: ScrollToOptions | number, y?: number) => {
+    initialContainer.scrollTo = ((
+      options?: ScrollToOptions | number,
+      y?: number,
+    ) => {
       const top =
-        typeof options === "number" ? (y ?? 0) : typeof options?.top === "number" ? options.top : 0;
+        typeof options === "number"
+          ? (y ?? 0)
+          : typeof options?.top === "number"
+            ? options.top
+            : 0;
       scrollTop = Math.max(0, Math.min(top, 2400 - 180));
     }) as typeof initialContainer.scrollTo;
 
@@ -482,9 +517,10 @@ describe("control UI routing", () => {
     await app.updateComplete;
 
     expect(app.settings.token).toBe("abc123");
-    expect(JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}").token).toBe(
-      undefined,
-    );
+    expect(
+      JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}")
+        .token,
+    ).toBe(undefined);
     expect(window.location.pathname).toBe("/ui/overview");
     expect(window.location.search).toBe("");
   });
@@ -501,18 +537,24 @@ describe("control UI routing", () => {
   it("hydrates token from URL hash when settings already set", async () => {
     localStorage.setItem(
       "openclaw.control.settings.v1",
-      JSON.stringify({ token: "existing-token", gatewayUrl: "wss://gateway.example/openclaw" }),
+      JSON.stringify({
+        token: "existing-token",
+        gatewayUrl: "wss://gateway.example/openclaw",
+      }),
     );
     const app = mountApp("/ui/overview#token=abc123");
     await app.updateComplete;
 
     expect(app.settings.token).toBe("abc123");
-    expect(JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}")).toMatchObject({
+    expect(
+      JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}"),
+    ).toMatchObject({
       gatewayUrl: "wss://gateway.example/openclaw",
     });
-    expect(JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}").token).toBe(
-      undefined,
-    );
+    expect(
+      JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}")
+        .token,
+    ).toBe(undefined);
     expect(window.location.pathname).toBe("/ui/overview");
     expect(window.location.hash).toBe("");
   });
@@ -522,9 +564,10 @@ describe("control UI routing", () => {
     await app.updateComplete;
 
     expect(app.settings.token).toBe("abc123");
-    expect(JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}").token).toBe(
-      undefined,
-    );
+    expect(
+      JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}")
+        .token,
+    ).toBe(undefined);
     expect(window.location.pathname).toBe("/ui/overview");
     expect(window.location.hash).toBe("");
   });
@@ -541,7 +584,9 @@ describe("control UI routing", () => {
     gatewayUrlInput!.dispatchEvent(new Event("input", { bubbles: true }));
     await app.updateComplete;
 
-    expect(app.settings.gatewayUrl).toBe("wss://other-gateway.example/openclaw");
+    expect(app.settings.gatewayUrl).toBe(
+      "wss://other-gateway.example/openclaw",
+    );
     expect(app.settings.token).toBe("");
   });
 
@@ -551,7 +596,9 @@ describe("control UI routing", () => {
     );
     await app.updateComplete;
 
-    expect(app.settings.gatewayUrl).not.toBe("wss://other-gateway.example/openclaw");
+    expect(app.settings.gatewayUrl).not.toBe(
+      "wss://other-gateway.example/openclaw",
+    );
     expect(app.settings.token).toBe("");
 
     await confirmPendingGatewayChange(app);
@@ -565,7 +612,9 @@ describe("control UI routing", () => {
     );
     await app.updateComplete;
 
-    expect(app.settings.gatewayUrl).not.toBe("wss://other-gateway.example/openclaw");
+    expect(app.settings.gatewayUrl).not.toBe(
+      "wss://other-gateway.example/openclaw",
+    );
     expect(app.settings.token).toBe("");
 
     await confirmPendingGatewayChange(app);
@@ -582,8 +631,9 @@ describe("control UI routing", () => {
     await refreshed.updateComplete;
 
     expect(refreshed.settings.token).toBe("abc123");
-    expect(JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}").token).toBe(
-      undefined,
-    );
+    expect(
+      JSON.parse(localStorage.getItem("openclaw.control.settings.v1") ?? "{}")
+        .token,
+    ).toBe(undefined);
   });
 });
