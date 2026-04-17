@@ -15,7 +15,10 @@ import type { GatewaySessionRow } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import { resolveAgentAvatarUrl } from "./agents-utils.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
-import { buildChatItems, syncToolCardExpansionState } from "./chat-line/items.ts";
+import {
+  buildChatItems,
+  syncToolCardExpansionState,
+} from "./chat-line/items.ts";
 import {
   renderAttachmentPreview,
   renderCompactionIndicator,
@@ -79,7 +82,8 @@ function renderAgentSelect(props: ChatProps): TemplateResult | typeof nothing {
     agents.find((agent) => agent.id === props.agentsList?.defaultId) ??
     agents[0];
 
-  const selectedLabel = selectedAgent.name ?? selectedAgent.identity?.name ?? selectedAgent.id;
+  const selectedLabel =
+    selectedAgent.name ?? selectedAgent.identity?.name ?? selectedAgent.id;
 
   return html`
     <label class="agent-chat__agent-select" title=${selectedLabel}>
@@ -87,13 +91,17 @@ function renderAgentSelect(props: ChatProps): TemplateResult | typeof nothing {
       <select
         aria-label="Select agent"
         ?disabled=${!props.connected}
-        @change=${(e: Event) => props.onAgentChange((e.target as HTMLSelectElement).value)}
+        @change=${(e: Event) =>
+          props.onAgentChange((e.target as HTMLSelectElement).value)}
       >
         ${repeat(
           agents,
           (agent) => agent.id,
           (agent) => html`
-            <option value=${agent.id} ?selected=${agent.id === selectedAgent.id}>
+            <option
+              value=${agent.id}
+              ?selected=${agent.id === selectedAgent.id}
+            >
               ${agent.name ?? agent.identity?.name ?? agent.id}
             </option>
           `,
@@ -141,14 +149,18 @@ function renderChatThread(
                         class="skeleton skeleton-line skeleton-line--medium"
                         style="margin-bottom: 8px"
                       ></div>
-                      <div class="skeleton skeleton-line skeleton-line--short"></div>
+                      <div
+                        class="skeleton skeleton-line skeleton-line--short"
+                      ></div>
                     </div>
                   </div>
                 </div>
                 <div class="chat-line user" style="margin-top: 12px">
                   <div class="chat-msg">
                     <div class="chat-bubble">
-                      <div class="skeleton skeleton-line skeleton-line--medium"></div>
+                      <div
+                        class="skeleton skeleton-line skeleton-line--medium"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -159,14 +171,18 @@ function renderChatThread(
                         class="skeleton skeleton-line skeleton-line--long"
                         style="margin-bottom: 8px"
                       ></div>
-                      <div class="skeleton skeleton-line skeleton-line--short"></div>
+                      <div
+                        class="skeleton skeleton-line skeleton-line--short"
+                      ></div>
                     </div>
                   </div>
                 </div>
               </div>
             `
           : nothing}
-        ${isEmpty && !chatViewState.searchOpen ? renderWelcomeState(props) : nothing}
+        ${isEmpty && !chatViewState.searchOpen
+          ? renderWelcomeState(props)
+          : nothing}
         ${isEmpty && chatViewState.searchOpen
           ? html` <div class="agent-chat__empty">No matching messages</div> `
           : nothing}
@@ -176,7 +192,11 @@ function renderChatThread(
           (item) => {
             if (item.kind === "divider") {
               return html`
-                <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
+                <div
+                  class="chat-divider"
+                  role="separator"
+                  data-ts=${String(item.timestamp)}
+                >
                   <span class="chat-divider__line"></span>
                   <span class="chat-divider__label">${item.label}</span>
                   <span class="chat-divider__line"></span>
@@ -184,7 +204,10 @@ function renderChatThread(
               `;
             }
             if (item.kind === "reading-indicator") {
-              return renderReadingIndicatorGroup(assistantIdentity, props.basePath);
+              return renderReadingIndicatorGroup(
+                assistantIdentity,
+                props.basePath,
+              );
             }
             if (item.kind === "stream") {
               return renderStreamingGroup(
@@ -204,14 +227,22 @@ function renderChatThread(
                 showReasoning,
                 showToolCalls: props.showToolCalls,
                 autoExpandToolCalls: Boolean(props.autoExpandToolCalls),
-                isToolMessageExpanded: (messageId: string) => expandedToolCards.get(messageId) ?? false,
+                isToolMessageExpanded: (messageId: string) =>
+                  expandedToolCards.get(messageId) ?? false,
                 onToggleToolMessageExpanded: (messageId: string) => {
-                  expandedToolCards.set(messageId, !expandedToolCards.get(messageId));
+                  expandedToolCards.set(
+                    messageId,
+                    !expandedToolCards.get(messageId),
+                  );
                   requestUpdate();
                 },
-                isToolExpanded: (toolCardId: string) => expandedToolCards.get(toolCardId) ?? false,
+                isToolExpanded: (toolCardId: string) =>
+                  expandedToolCards.get(toolCardId) ?? false,
                 onToggleToolExpanded: (toolCardId: string) => {
-                  expandedToolCards.set(toolCardId, !expandedToolCards.get(toolCardId));
+                  expandedToolCards.set(
+                    toolCardId,
+                    !expandedToolCards.get(toolCardId),
+                  );
                   requestUpdate();
                 },
                 onRequestUpdate: requestUpdate,
@@ -219,12 +250,15 @@ function renderChatThread(
                 assistantAvatar: assistantIdentity.avatar,
                 basePath: props.basePath,
                 localMediaPreviewRoots: props.localMediaPreviewRoots ?? [],
-                assistantAttachmentAuthToken: props.assistantAttachmentAuthToken ?? null,
+                assistantAttachmentAuthToken:
+                  props.assistantAttachmentAuthToken ?? null,
                 canvasHostUrl: props.canvasHostUrl,
                 embedSandboxMode: props.embedSandboxMode ?? "scripts",
                 allowExternalEmbedUrls: props.allowExternalEmbedUrls ?? false,
                 contextWindow:
-                  activeSession?.contextTokens ?? props.sessions?.defaults?.contextTokens ?? null,
+                  activeSession?.contextTokens ??
+                  props.sessions?.defaults?.contextTokens ??
+                  null,
                 onDelete: () => {
                   deleted.delete(item.key);
                   requestUpdate();
@@ -243,7 +277,9 @@ export function renderChat(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
   const canAbort = Boolean(props.canAbort && props.onAbort);
-  const activeSession = props.sessions?.sessions?.find((row) => row.key === props.sessionKey);
+  const activeSession = props.sessions?.sessions?.find(
+    (row) => row.key === props.sessionKey,
+  );
   const reasoningLevel = activeSession?.reasoningLevel ?? "off";
   const showReasoning = props.showThinking && reasoningLevel !== "off";
   const assistantIdentity = {
@@ -274,7 +310,11 @@ export function renderChat(props: ChatProps) {
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
 
   const chatItems = buildChatItems(props);
-  syncToolCardExpansionState(props.sessionKey, chatItems, Boolean(props.autoExpandToolCalls));
+  syncToolCardExpansionState(
+    props.sessionKey,
+    chatItems,
+    Boolean(props.autoExpandToolCalls),
+  );
   const expandedToolCards = getExpandedToolCards(props.sessionKey);
 
   const thread = renderChatThread(
@@ -295,7 +335,11 @@ export function renderChat(props: ChatProps) {
     canCompose,
     getDraft,
   });
-  const handleInput = createChatInputHandler({ props, requestUpdate, inputHistory });
+  const handleInput = createChatInputHandler({
+    props,
+    requestUpdate,
+    inputHistory,
+  });
 
   return html`
     <section
@@ -303,8 +347,12 @@ export function renderChat(props: ChatProps) {
       @drop=${(e: DragEvent) => handleDrop(e, props)}
       @dragover=${(e: DragEvent) => e.preventDefault()}
     >
-      ${props.disabledReason ? html`<div class="callout">${props.disabledReason}</div>` : nothing}
-      ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
+      ${props.disabledReason
+        ? html`<div class="callout">${props.disabledReason}</div>`
+        : nothing}
+      ${props.error
+        ? html`<div class="callout danger">${props.error}</div>`
+        : nothing}
       ${props.focusMode
         ? html`
             <button
@@ -318,9 +366,14 @@ export function renderChat(props: ChatProps) {
             </button>
           `
         : nothing}
-      ${renderSearchBar(requestUpdate)} ${renderPinnedSection(props, pinned, requestUpdate)}
+      ${renderSearchBar(requestUpdate)}
+      ${renderPinnedSection(props, pinned, requestUpdate)}
 
-      <div class="chat-split-container ${sidebarOpen ? "chat-split-container--open" : ""}">
+      <div
+        class="chat-split-container ${sidebarOpen
+          ? "chat-split-container--open"
+          : ""}"
+      >
         <div
           class="chat-main"
           style="flex: ${sidebarOpen ? `0 0 ${splitRatio * 100}%` : "1 1 100%"}"
@@ -332,7 +385,8 @@ export function renderChat(props: ChatProps) {
           ? html`
               <resizable-divider
                 .splitRatio=${splitRatio}
-                @resize=${(e: CustomEvent) => props.onSplitRatioChange?.(e.detail.splitRatio)}
+                @resize=${(e: CustomEvent) =>
+                  props.onSplitRatioChange?.(e.detail.splitRatio)}
               ></resizable-divider>
               <div class="chat-sidebar">
                 ${renderMarkdownSidebar({
@@ -348,13 +402,17 @@ export function renderChat(props: ChatProps) {
                     }
                     if (props.sidebarContent.kind === "markdown") {
                       props.onOpenSidebar(
-                        buildSidebarContent(`\`\`\`\n${props.sidebarContent.content}\n\`\`\``),
+                        buildSidebarContent(
+                          `\`\`\`\n${props.sidebarContent.content}\n\`\`\``,
+                        ),
                       );
                       return;
                     }
                     if (props.sidebarContent.rawText?.trim()) {
                       props.onOpenSidebar(
-                        buildSidebarContent(`\`\`\`json\n${props.sidebarContent.rawText}\n\`\`\``),
+                        buildSidebarContent(
+                          `\`\`\`json\n${props.sidebarContent.rawText}\n\`\`\``,
+                        ),
                       );
                     }
                   },
@@ -367,13 +425,18 @@ export function renderChat(props: ChatProps) {
       ${props.queue.length
         ? html`
             <div class="chat-queue" role="status" aria-live="polite">
-              <div class="chat-queue__title">Queued (${props.queue.length})</div>
+              <div class="chat-queue__title">
+                Queued (${props.queue.length})
+              </div>
               <div class="chat-queue__list">
                 ${props.queue.map(
                   (item) => html`
                     <div class="chat-queue__item">
                       <div class="chat-queue__text">
-                        ${item.text || (item.attachments?.length ? `Image (${item.attachments.length})` : "")}
+                        ${item.text ||
+                        (item.attachments?.length
+                          ? `Image (${item.attachments.length})`
+                          : "")}
                       </div>
                       <button
                         class="btn chat-queue__remove"
@@ -393,18 +456,28 @@ export function renderChat(props: ChatProps) {
       ${renderSideResult(props.sideResult, props.onDismissSideResult)}
       ${renderFallbackIndicator(props.fallbackStatus)}
       ${renderCompactionIndicator(props.compactionStatus)}
-      ${renderContextNotice(activeSession, props.sessions?.defaults?.contextTokens ?? null)}
+      ${renderContextNotice(
+        activeSession,
+        props.sessions?.defaults?.contextTokens ?? null,
+      )}
       ${props.showNewMessages
         ? html`
-            <button class="chat-new-messages" type="button" @click=${props.onScrollToBottom}>
+            <button
+              class="chat-new-messages"
+              type="button"
+              @click=${props.onScrollToBottom}
+            >
               ${icons.arrowDown} New messages
             </button>
           `
         : nothing}
 
       <div class="agent-chat__input">
-        <div class="agent-chat__input-hint">Add images, files, @ mentions, or / commands.</div>
-        ${renderSlashMenu(requestUpdate, props)} ${renderAttachmentPreview(props)}
+        <div class="agent-chat__input-hint">
+          Add images, files, @ mentions, or / commands.
+        </div>
+        ${renderSlashMenu(requestUpdate, props)}
+        ${renderAttachmentPreview(props)}
 
         <input
           type="file"
@@ -415,26 +488,34 @@ export function renderChat(props: ChatProps) {
         />
 
         ${chatViewState.sttRecording && chatViewState.sttInterimText
-          ? html`<div class="agent-chat__stt-interim">${chatViewState.sttInterimText}</div>`
+          ? html`<div class="agent-chat__stt-interim">
+              ${chatViewState.sttInterimText}
+            </div>`
           : nothing}
 
         <div class="agent-chat__composer">
           <textarea
-            ${ref((el) => el && adjustTextareaHeight(el as HTMLTextAreaElement))}
+            ${ref(
+              (el) => el && adjustTextareaHeight(el as HTMLTextAreaElement),
+            )}
             .value=${props.draft}
             dir=${detectTextDirection(props.draft)}
             ?disabled=${!props.connected}
             @keydown=${handleKeyDown}
             @input=${handleInput}
             @paste=${(e: ClipboardEvent) => handlePaste(e, props)}
-            placeholder=${chatViewState.sttRecording ? "Listening..." : placeholder}
+            placeholder=${chatViewState.sttRecording
+              ? "Listening..."
+              : placeholder}
             rows="1"
           ></textarea>
 
           <div class="agent-chat__toolbar">
             <div class="agent-chat__toolbar-left">
               ${renderAgentSelect(props)}
-              ${tokens ? html`<span class="agent-chat__token-count">${tokens}</span>` : nothing}
+              ${tokens
+                ? html`<span class="agent-chat__token-count">${tokens}</span>`
+                : nothing}
             </div>
 
             <div class="agent-chat__toolbar-right">
@@ -442,7 +523,9 @@ export function renderChat(props: ChatProps) {
               <button
                 class="agent-chat__input-btn"
                 @click=${() => {
-                  document.querySelector<HTMLInputElement>(".agent-chat__file-input")?.click();
+                  document
+                    .querySelector<HTMLInputElement>(".agent-chat__file-input")
+                    ?.click();
                 }}
                 title="Attach file"
                 aria-label="Attach file"
@@ -490,7 +573,8 @@ export function renderChat(props: ChatProps) {
                             onTranscript: (text, isFinal) => {
                               if (isFinal) {
                                 const current = getDraft();
-                                const sep = current && !current.endsWith(" ") ? " " : "";
+                                const sep =
+                                  current && !current.endsWith(" ") ? " " : "";
                                 props.onDraftChange(current + sep + text);
                                 chatViewState.sttInterimText = "";
                               } else {
@@ -519,14 +603,15 @@ export function renderChat(props: ChatProps) {
                           }
                         }
                       }}
-                      title=${chatViewState.sttRecording ? "Stop recording" : "Voice input"}
+                      title=${chatViewState.sttRecording
+                        ? "Stop recording"
+                        : "Voice input"}
                       ?disabled=${!props.connected}
                     >
                       ${chatViewState.sttRecording ? icons.micOff : icons.mic}
                     </button>
                   `
                 : nothing}
-
               ${canAbort
                 ? html`
                     <button
@@ -558,6 +643,12 @@ export function renderChat(props: ChatProps) {
           </div>
         </div>
       </div>
+      <p class="agent-chat__disclaimer">
+        <span>以上大模型生成内容，不构成任何投资建议</span>
+        <span>Copyright @ Gil-GPT</span>
+        <span>上线编号：Shanghai-GilGPT-20240521S0003</span>
+        <span class="agent-chat__disclaimer-link">免责声明</span>
+      </p>
     </section>
   `;
 }

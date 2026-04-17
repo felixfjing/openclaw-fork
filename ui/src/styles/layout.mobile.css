@@ -561,7 +561,9 @@
     width: 14px;
     height: 14px;
   }
-
+  .chat--line {
+    padding-bottom: 4px;
+  }
   .chat--line .agent-chat__input {
     margin: 0 8px 10px;
     padding: 10px;
@@ -582,6 +584,11 @@
 
   .chat--line .agent-chat__toolbar {
     gap: 8px;
+  }
+
+  .chat--line .agent-chat__disclaimer {
+    font-size: 11px;
+    line-height: 18px;
   }
 
   .chat--line .agent-chat__agent-select {
