@@ -6,5 +6,5 @@
 @import "./chat/standalone.css";
 
 :root[data-theme-mode="light"] .content--chat {
-  background: #fff;
+  background: #f5f7fa;
 }

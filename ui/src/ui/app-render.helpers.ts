@@ -15,8 +15,14 @@ import { ChatState, loadChatHistory } from "./controllers/chat.ts";
 import { loadSessions } from "./controllers/sessions.ts";
 import { icons } from "./icons.ts";
 import { iconForTab, pathForTab, titleForTab, type Tab } from "./navigation.ts";
-import { parseAgentSessionKey } from "./session-key.ts";
-import { normalizeLowercaseStringOrEmpty, normalizeOptionalString } from "./string-coerce.ts";
+import {
+  parseAgentSessionKey,
+  resolveAgentIdFromSessionKey,
+} from "./session-key.ts";
+import {
+  normalizeLowercaseStringOrEmpty,
+  normalizeOptionalString,
+} from "./string-coerce.ts";
 import type { ThemeMode } from "./theme.ts";
 import {
   listThinkingLevelLabels,
@@ -49,7 +55,9 @@ export function resolveAssistantAttachmentAuthToken(
   state: Pick<AppViewState, "settings" | "password">,
 ) {
   return (
-    normalizeOptionalString(state.settings.token) ?? normalizeOptionalString(state.password) ?? null
+    normalizeOptionalString(state.settings.token) ??
+    normalizeOptionalString(state.password) ??
+    null
   );
 }
 
@@ -57,7 +65,9 @@ function resolveSidebarChatSessionKey(state: AppViewState): string {
   const snapshot = state.hello?.snapshot as
     | { sessionDefaults?: SessionDefaultsSnapshot }
     | undefined;
-  const mainSessionKey = normalizeOptionalString(snapshot?.sessionDefaults?.mainSessionKey);
+  const mainSessionKey = normalizeOptionalString(
+    snapshot?.sessionDefaults?.mainSessionKey,
+  );
   if (mainSessionKey) {
     return mainSessionKey;
   }
@@ -68,7 +78,10 @@ function resolveSidebarChatSessionKey(state: AppViewState): string {
   return "main";
 }
 
-function resetChatStateForSessionSwitch(state: AppViewState, sessionKey: string) {
+function resetChatStateForSessionSwitch(
+  state: AppViewState,
+  sessionKey: string,
+) {
   const host = state as unknown as SessionSwitchHost;
   state.sessionKey = sessionKey;
   state.chatMessage = "";
@@ -96,7 +109,11 @@ function resetChatStateForSessionSwitch(state: AppViewState, sessionKey: string)
   });
 }
 
-export function renderTab(state: AppViewState, tab: Tab, opts?: { collapsed?: boolean }) {
+export function renderTab(
+  state: AppViewState,
+  tab: Tab,
+  opts?: { collapsed?: boolean },
+) {
   const href = pathForTab(tab, state.basePath);
   const isActive = state.tab === tab;
   const collapsed = opts?.collapsed ?? state.settings.navCollapsed;
@@ -129,15 +146,21 @@ export function renderTab(state: AppViewState, tab: Tab, opts?: { collapsed?: bo
       }}
       title=${titleForTab(tab)}
     >
-      <span class="nav-item__icon" aria-hidden="true">${icons[iconForTab(tab)]}</span>
-      ${!collapsed ? html`<span class="nav-item__text">${titleForTab(tab)}</span>` : nothing}
+      <span class="nav-item__icon" aria-hidden="true"
+        >${icons[iconForTab(tab)]}</span
+      >
+      ${!collapsed
+        ? html`<span class="nav-item__text">${titleForTab(tab)}</span>`
+        : nothing}
     </a>
   `;
 }
 
 function renderCronFilterIcon(hiddenCount: number) {
   return html`
-    <span style="position: relative; display: inline-flex; align-items: center;">
+    <span
+      style="position: relative; display: inline-flex; align-items: center;"
+    >
       <svg
         width="16"
         height="16"
@@ -174,12 +197,18 @@ function renderCronFilterIcon(hiddenCount: number) {
 }
 
 export function renderChatSessionSelect(state: AppViewState) {
-  const sessionGroups = resolveSessionOptionGroups(state, state.sessionKey, state.sessionsResult);
+  const sessionGroups = resolveSessionOptionGroups(
+    state,
+    state.sessionKey,
+    state.sessionsResult,
+  );
   const modelSelect = renderChatModelSelect(state);
   const thinkingSelect = renderChatThinkingSelect(state);
   const selectedSessionLabel =
-    sessionGroups.flatMap((group) => group.options).find((entry) => entry.key === state.sessionKey)
-      ?.label ?? state.sessionKey;
+    sessionGroups
+      .flatMap((group) => group.options)
+      .find((entry) => entry.key === state.sessionKey)?.label ??
+    state.sessionKey;
   return html`
     <div class="chat-controls__session-row">
       <label class="field chat-controls__session">
@@ -228,8 +257,12 @@ export function renderChatControls(state: AppViewState) {
     : 0;
   const disableThinkingToggle = state.onboarding;
   const disableFocusToggle = state.onboarding;
-  const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
-  const showToolCalls = state.onboarding ? true : state.settings.chatShowToolCalls;
+  const showThinking = state.onboarding
+    ? false
+    : state.settings.chatShowThinking;
+  const showToolCalls = state.onboarding
+    ? true
+    : state.settings.chatShowToolCalls;
   const focusActive = state.onboarding ? true : state.settings.chatFocusMode;
   const toolCallsIcon = html`
     <svg
@@ -292,9 +325,12 @@ export function renderChatControls(state: AppViewState) {
           await app.updateComplete;
           app.resetToolStream();
           try {
-            await refreshChat(state as unknown as Parameters<typeof refreshChat>[0], {
-              scheduleScroll: false,
-            });
+            await refreshChat(
+              state as unknown as Parameters<typeof refreshChat>[0],
+              {
+                scheduleScroll: false,
+              },
+            );
             app.scrollToBottom({ smooth: true });
           } finally {
             requestAnimationFrame(() => {
@@ -321,7 +357,9 @@ export function renderChatControls(state: AppViewState) {
           });
         }}
         aria-pressed=${showThinking}
-        title=${disableThinkingToggle ? t("chat.onboardingDisabled") : t("chat.thinkingToggle")}
+        title=${disableThinkingToggle
+          ? t("chat.onboardingDisabled")
+          : t("chat.thinkingToggle")}
       >
         ${icons.brain}
       </button>
@@ -338,7 +376,9 @@ export function renderChatControls(state: AppViewState) {
           });
         }}
         aria-pressed=${showToolCalls}
-        title=${disableThinkingToggle ? t("chat.onboardingDisabled") : t("chat.toolCallsToggle")}
+        title=${disableThinkingToggle
+          ? t("chat.onboardingDisabled")
+          : t("chat.toolCallsToggle")}
       >
         ${toolCallsIcon}
       </button>
@@ -355,7 +395,9 @@ export function renderChatControls(state: AppViewState) {
           });
         }}
         aria-pressed=${focusActive}
-        title=${disableFocusToggle ? t("chat.onboardingDisabled") : t("chat.focusToggle")}
+        title=${disableFocusToggle
+          ? t("chat.onboardingDisabled")
+          : t("chat.focusToggle")}
       >
         ${focusIcon}
       </button>
@@ -367,7 +409,9 @@ export function renderChatControls(state: AppViewState) {
         aria-pressed=${hideCron}
         title=${hideCron
           ? hiddenCronCount > 0
-            ? t("chat.showCronSessionsHidden", { count: String(hiddenCronCount) })
+            ? t("chat.showCronSessionsHidden", {
+                count: String(hiddenCronCount),
+              })
             : t("chat.showCronSessions")
           : t("chat.hideCronSessions")}
       >
@@ -383,11 +427,19 @@ export function renderChatControls(state: AppViewState) {
  * Hidden on desktop via CSS.
  */
 export function renderChatMobileToggle(state: AppViewState) {
-  const sessionGroups = resolveSessionOptionGroups(state, state.sessionKey, state.sessionsResult);
+  const sessionGroups = resolveSessionOptionGroups(
+    state,
+    state.sessionKey,
+    state.sessionsResult,
+  );
   const disableThinkingToggle = state.onboarding;
   const disableFocusToggle = state.onboarding;
-  const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
-  const showToolCalls = state.onboarding ? true : state.settings.chatShowToolCalls;
+  const showThinking = state.onboarding
+    ? false
+    : state.settings.chatShowThinking;
+  const showToolCalls = state.onboarding
+    ? true
+    : state.settings.chatShowToolCalls;
   const focusActive = state.onboarding ? true : state.settings.chatFocusMode;
   const toolCallsIcon = html`
     <svg
@@ -439,7 +491,10 @@ export function renderChatMobileToggle(state: AppViewState) {
                 dropdown.classList.remove("open");
                 document.removeEventListener("click", close);
               };
-              setTimeout(() => document.addEventListener("click", close, { once: true }), 0);
+              setTimeout(
+                () => document.addEventListener("click", close, { once: true }),
+                0,
+              );
             }
           }
         }}
@@ -570,6 +625,44 @@ export function switchChatSession(state: AppViewState, nextSessionKey: string) {
   void refreshSessionOptions(state);
 }
 
+type CreateSessionResult = {
+  key?: string;
+};
+
+export async function createPersistentChatSession(state: AppViewState) {
+  if (!state.client || !state.connected) {
+    return;
+  }
+
+  const currentSessionKey = state.sessionKey;
+  const activeRow = state.sessionsResult?.sessions.find(
+    (row) => row.key === currentSessionKey,
+  );
+  const draft = state.chatMessage;
+  const attachments = state.chatAttachments;
+
+  state.lastError = null;
+
+  try {
+    const result = await state.client.request<CreateSessionResult>(
+      "sessions.create",
+      {
+        agentId: resolveAgentIdFromSessionKey(currentSessionKey),
+        parentSessionKey: currentSessionKey,
+        model: activeRow?.model ?? null,
+      },
+    );
+    if (!result.key) {
+      throw new Error("sessions.create did not return a session key");
+    }
+    switchChatSession(state, result.key);
+    state.chatMessage = draft;
+    state.chatAttachments = attachments;
+  } catch (err) {
+    state.lastError = `Failed to create session: ${String(err)}`;
+  }
+}
+
 async function refreshSessionOptions(state: AppViewState) {
   await loadSessions(state as unknown as Parameters<typeof loadSessions>[0], {
     activeMinutes: 0,
@@ -580,15 +673,23 @@ async function refreshSessionOptions(state: AppViewState) {
 }
 
 function renderChatModelSelect(state: AppViewState) {
-  const { currentOverride, defaultLabel, options } = resolveChatModelSelectState(state);
+  const { currentOverride, defaultLabel, options } =
+    resolveChatModelSelectState(state);
   const busy =
-    state.chatLoading || state.chatSending || Boolean(state.chatRunId) || state.chatStream !== null;
+    state.chatLoading ||
+    state.chatSending ||
+    Boolean(state.chatRunId) ||
+    state.chatStream !== null;
   const disabled =
-    !state.connected || busy || (state.chatModelsLoading && options.length === 0) || !state.client;
+    !state.connected ||
+    busy ||
+    (state.chatModelsLoading && options.length === 0) ||
+    !state.client;
   const selectedLabel =
     currentOverride === ""
       ? defaultLabel
-      : (options.find((entry) => entry.value === currentOverride)?.label ?? currentOverride);
+      : (options.find((entry) => entry.value === currentOverride)?.label ??
+        currentOverride);
   return html`
     <label class="field chat-controls__session chat-controls__model">
       <select
@@ -601,12 +702,17 @@ function renderChatModelSelect(state: AppViewState) {
           await switchChatModel(state, next);
         }}
       >
-        <option value="" ?selected=${currentOverride === ""}>${defaultLabel}</option>
+        <option value="" ?selected=${currentOverride === ""}>
+          ${defaultLabel}
+        </option>
         ${repeat(
           options,
           (entry) => entry.value,
           (entry) =>
-            html`<option value=${entry.value} ?selected=${entry.value === currentOverride}>
+            html`<option
+              value=${entry.value}
+              ?selected=${entry.value === currentOverride}
+            >
               ${entry.label}
             </option>`,
         )}
@@ -630,9 +736,14 @@ function resolveThinkingTargetModel(state: AppViewState): {
   provider: string | null;
   model: string | null;
 } {
-  const activeRow = state.sessionsResult?.sessions?.find((row) => row.key === state.sessionKey);
+  const activeRow = state.sessionsResult?.sessions?.find(
+    (row) => row.key === state.sessionKey,
+  );
   return {
-    provider: activeRow?.modelProvider ?? state.sessionsResult?.defaults?.modelProvider ?? null,
+    provider:
+      activeRow?.modelProvider ??
+      state.sessionsResult?.defaults?.modelProvider ??
+      null,
     model: activeRow?.model ?? state.sessionsResult?.defaults?.model ?? null,
   };
 }
@@ -667,7 +778,8 @@ function buildThinkingOptions(
   };
 
   for (const label of listThinkingLevelLabels(provider)) {
-    const normalized = normalizeThinkLevel(label) ?? normalizeLowercaseStringOrEmpty(label);
+    const normalized =
+      normalizeThinkLevel(label) ?? normalizeLowercaseStringOrEmpty(label);
     addOption(normalized);
   }
   if (currentOverride) {
@@ -676,8 +788,12 @@ function buildThinkingOptions(
   return options;
 }
 
-function resolveChatThinkingSelectState(state: AppViewState): ChatThinkingSelectState {
-  const activeRow = state.sessionsResult?.sessions?.find((row) => row.key === state.sessionKey);
+function resolveChatThinkingSelectState(
+  state: AppViewState,
+): ChatThinkingSelectState {
+  const activeRow = state.sessionsResult?.sessions?.find(
+    (row) => row.key === state.sessionKey,
+  );
   const persisted = activeRow?.thinkingLevel;
   const currentOverride =
     typeof persisted === "string" && persisted.trim()
@@ -700,14 +816,19 @@ function resolveChatThinkingSelectState(state: AppViewState): ChatThinkingSelect
 }
 
 function renderChatThinkingSelect(state: AppViewState) {
-  const { currentOverride, defaultLabel, options } = resolveChatThinkingSelectState(state);
+  const { currentOverride, defaultLabel, options } =
+    resolveChatThinkingSelectState(state);
   const busy =
-    state.chatLoading || state.chatSending || Boolean(state.chatRunId) || state.chatStream !== null;
+    state.chatLoading ||
+    state.chatSending ||
+    Boolean(state.chatRunId) ||
+    state.chatStream !== null;
   const disabled = !state.connected || busy || !state.client;
   const selectedLabel =
     currentOverride === ""
       ? defaultLabel
-      : (options.find((entry) => entry.value === currentOverride)?.label ?? currentOverride);
+      : (options.find((entry) => entry.value === currentOverride)?.label ??
+        currentOverride);
   return html`
     <label class="field chat-controls__session chat-controls__thinking-select">
       <select
@@ -720,12 +841,17 @@ function renderChatThinkingSelect(state: AppViewState) {
           await switchChatThinkingLevel(state, next);
         }}
       >
-        <option value="" ?selected=${currentOverride === ""}>${defaultLabel}</option>
+        <option value="" ?selected=${currentOverride === ""}>
+          ${defaultLabel}
+        </option>
         ${repeat(
           options,
           (entry) => entry.value,
           (entry) =>
-            html`<option value=${entry.value} ?selected=${entry.value === currentOverride}>
+            html`<option
+              value=${entry.value}
+              ?selected=${entry.value === currentOverride}
+            >
               ${entry.label}
             </option>`,
         )}
@@ -759,7 +885,10 @@ async function switchChatModel(state: AppViewState, nextModel: string) {
     await refreshSessionOptions(state);
   } catch (err) {
     // Roll back so the picker reflects the actual server model.
-    state.chatModelOverrides = { ...state.chatModelOverrides, [targetSessionKey]: prevOverride };
+    state.chatModelOverrides = {
+      ...state.chatModelOverrides,
+      [targetSessionKey]: prevOverride,
+    };
     state.lastError = `Failed to set model: ${String(err)}`;
   }
 }
@@ -786,18 +915,25 @@ function patchSessionThinkingLevel(
   };
 }
 
-async function switchChatThinkingLevel(state: AppViewState, nextThinkingLevel: string) {
+async function switchChatThinkingLevel(
+  state: AppViewState,
+  nextThinkingLevel: string,
+) {
   if (!state.client || !state.connected) {
     return;
   }
   const targetSessionKey = state.sessionKey;
-  const activeRow = state.sessionsResult?.sessions?.find((row) => row.key === targetSessionKey);
+  const activeRow = state.sessionsResult?.sessions?.find(
+    (row) => row.key === targetSessionKey,
+  );
   const previousThinkingLevel = activeRow?.thinkingLevel;
   const normalizedNext =
-    (normalizeThinkLevel(nextThinkingLevel) ?? nextThinkingLevel.trim()) || undefined;
+    (normalizeThinkLevel(nextThinkingLevel) ?? nextThinkingLevel.trim()) ||
+    undefined;
   const normalizedPrev =
     typeof previousThinkingLevel === "string" && previousThinkingLevel.trim()
-      ? (normalizeThinkLevel(previousThinkingLevel) ?? previousThinkingLevel.trim())
+      ? (normalizeThinkLevel(previousThinkingLevel) ??
+        previousThinkingLevel.trim())
       : undefined;
   if ((normalizedPrev ?? "") === (normalizedNext ?? "")) {
     return;
@@ -907,7 +1043,10 @@ export function resolveSessionDisplayName(
     if (!prefix) {
       return name;
     }
-    const prefixPattern = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*`, "i");
+    const prefixPattern = new RegExp(
+      `^${prefix.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\s*`,
+      "i",
+    );
     return prefixPattern.test(name) ? name : `${prefix} ${name}`;
   };
 
@@ -1004,7 +1143,10 @@ export function resolveSessionOptionGroups(
   };
 
   for (const row of rows) {
-    if (row.key !== sessionKey && (row.kind === "global" || row.kind === "unknown")) {
+    if (
+      row.key !== sessionKey &&
+      (row.kind === "global" || row.kind === "unknown")
+    ) {
       continue;
     }
     if (hideCron && row.key !== sessionKey && isCronSessionKey(row.key)) {
@@ -1020,7 +1162,10 @@ export function resolveSessionOptionGroups(
       counts.set(option.label, (counts.get(option.label) ?? 0) + 1);
     }
     for (const option of group.options) {
-      if ((counts.get(option.label) ?? 0) > 1 && option.scopeLabel !== option.label) {
+      if (
+        (counts.get(option.label) ?? 0) > 1 &&
+        option.scopeLabel !== option.label
+      ) {
         option.label = `${option.label} · ${option.scopeLabel}`;
       }
     }
@@ -1029,7 +1174,9 @@ export function resolveSessionOptionGroups(
   const allOptions = Array.from(groups.values()).flatMap((group) =>
     group.options.map((option) => ({ groupLabel: group.label, option })),
   );
-  const labels = new Map(allOptions.map(({ option }) => [option, option.label]));
+  const labels = new Map(
+    allOptions.map(({ option }) => [option, option.label]),
+  );
   const countAssignedLabels = () => {
     const counts = new Map<string, number>();
     for (const { option } of allOptions) {
@@ -1094,21 +1241,31 @@ export function resolveSessionOptionGroups(
 }
 
 /** Count sessions with a cron: key that would be hidden when hideCron=true. */
-function countHiddenCronSessions(sessionKey: string, sessions: SessionsListResult | null): number {
+function countHiddenCronSessions(
+  sessionKey: string,
+  sessions: SessionsListResult | null,
+): number {
   if (!sessions?.sessions) {
     return 0;
   }
   // Don't count the currently active session even if it's a cron.
-  return sessions.sessions.filter((s) => isCronSessionKey(s.key) && s.key !== sessionKey).length;
+  return sessions.sessions.filter(
+    (s) => isCronSessionKey(s.key) && s.key !== sessionKey,
+  ).length;
 }
 
-function resolveAgentGroupLabel(state: AppViewState, agentIdRaw: string): string {
+function resolveAgentGroupLabel(
+  state: AppViewState,
+  agentIdRaw: string,
+): string {
   const normalized = normalizeLowercaseStringOrEmpty(agentIdRaw);
   const agent = (state.agentsList?.agents ?? []).find(
     (entry) => normalizeLowercaseStringOrEmpty(entry.id) === normalized,
   );
   const name =
-    normalizeOptionalString(agent?.identity?.name) ?? normalizeOptionalString(agent?.name) ?? "";
+    normalizeOptionalString(agent?.identity?.name) ??
+    normalizeOptionalString(agent?.name) ??
+    "";
   return name && name !== agentIdRaw ? `${name} (${agentIdRaw})` : agentIdRaw;
 }
 

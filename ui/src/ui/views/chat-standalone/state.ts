@@ -8,6 +8,8 @@ import type { SlashCommandDef } from "../../chat-claw/slash-commands.ts";
 export interface ChatEphemeralState {
   sttRecording: boolean;
   sttInterimText: string;
+  sessionSidebarCollapsed: boolean;
+  sessionSidebarSearch: string;
   slashMenuOpen: boolean;
   slashMenuItems: SlashCommandDef[];
   slashMenuIndex: number;
@@ -23,6 +25,8 @@ function createChatEphemeralState(): ChatEphemeralState {
   return {
     sttRecording: false,
     sttInterimText: "",
+    sessionSidebarCollapsed: false,
+    sessionSidebarSearch: "",
     slashMenuOpen: false,
     slashMenuItems: [],
     slashMenuIndex: 0,
@@ -45,7 +49,11 @@ const initializedToolCardsBySession = new Map<string, Set<string>>();
 const lastAutoExpandPrefBySession = new Map<string, boolean>();
 
 export function getInputHistory(sessionKey: string): InputHistory {
-  return getOrCreateSessionCacheValue(inputHistories, sessionKey, () => new InputHistory());
+  return getOrCreateSessionCacheValue(
+    inputHistories,
+    sessionKey,
+    () => new InputHistory(),
+  );
 }
 
 export function getPinnedMessages(sessionKey: string): PinnedMessages {
@@ -65,18 +73,29 @@ export function getDeletedMessages(sessionKey: string): DeletedMessages {
 }
 
 export function getExpandedToolCards(sessionKey: string): Map<string, boolean> {
-  return getOrCreateSessionCacheValue(expandedToolCardsBySession, sessionKey, () => new Map());
+  return getOrCreateSessionCacheValue(
+    expandedToolCardsBySession,
+    sessionKey,
+    () => new Map(),
+  );
 }
 
 export function getInitializedToolCards(sessionKey: string): Set<string> {
-  return getOrCreateSessionCacheValue(initializedToolCardsBySession, sessionKey, () => new Set());
+  return getOrCreateSessionCacheValue(
+    initializedToolCardsBySession,
+    sessionKey,
+    () => new Set(),
+  );
 }
 
 export function getLastAutoExpandPref(sessionKey: string): boolean {
   return lastAutoExpandPrefBySession.get(sessionKey) ?? false;
 }
 
-export function setLastAutoExpandPref(sessionKey: string, enabled: boolean): void {
+export function setLastAutoExpandPref(
+  sessionKey: string,
+  enabled: boolean,
+): void {
   lastAutoExpandPrefBySession.set(sessionKey, enabled);
 }
 
