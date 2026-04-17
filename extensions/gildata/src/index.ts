@@ -50,6 +50,20 @@ export default definePluginEntry({
       auth: "plugin",
     });
 
+    // 注册综合助手聊天页面 GET 路由
+    api.registerHttpRoute({
+      path: "/plugins/gildata/warrenq-chat",
+      handler: async (req, res) => {
+        const { handleWarrenqChatRoute } = await import("./warrenq-chat-route.js");
+        const urlPath = req.url ?? "/";
+        const bp = urlPath.endsWith("/warrenq-chat")
+          ? urlPath.replace(/\/warrenq-chat$/, "")
+          : "";
+        return handleWarrenqChatRoute(req, res, bp);
+      },
+      auth: "plugin",
+    });
+
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Gildata",

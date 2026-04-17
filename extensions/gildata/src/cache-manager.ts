@@ -10,7 +10,7 @@
  * - 不缓存敏感信息（token、密码）
  */
 
-import { warrenqTenantInfo } from "./warrenq-login.js";
+import type { warrenqTenantInfo } from "./warrenq-login.js";
 import type { warrenqModelList } from "./types.js";
 
 /**

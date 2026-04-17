@@ -154,8 +154,20 @@ export async function promptAndConfigurewarrenqAuth(params: {
   if (enablewarrenq) {
     logger.info("用户选择启用warrenq系统认证", { correlationId });
     return {
-      kind: "warrenq",
-      warrenqEnabled: true,
+      profiles: [{
+        profileId: "gildata:warrenq",
+        credential: {
+          type: "token",
+          provider: "gildata",
+        },
+      }],
+      configPatch: {
+        models: {
+          providers: {
+            gildata: { warrenqEnabled: true },
+          },
+        },
+      },
     };
   }
 
@@ -184,9 +196,24 @@ export async function promptAndConfigurewarrenqAuth(params: {
   });
 
   return {
-    kind: "api-key",
-    apiKey: apiKey,
-    warrenqEnabled: false,
+    profiles: [{
+      profileId: "gildata:api-key",
+      credential: {
+        type: "api_key",
+        provider: "gildata",
+        key: apiKey,
+      },
+    }],
+    configPatch: {
+      models: {
+        providers: {
+          gildata: {
+            warrenqEnabled: false,
+            apiKey,
+          },
+        },
+      },
+    },
   };
 }
 

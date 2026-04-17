@@ -121,7 +121,7 @@ async function apiLoggingExample() {
     },
     body: {
       message: "Hello",
-      model: "qwen-plus",
+      model: "qwen-plus-latest",
     },
     correlationId,
   });

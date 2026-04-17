@@ -1,6 +1,5 @@
 import type { ModelDefinitionConfig } from "openclaw/plugin-sdk/provider-onboard";
 import { fetchWithSsrFGuard } from "openclaw/plugin-sdk/ssrf-runtime";
-import { z } from "zod";
 import { logger, generateCorrelationId } from "./logger.js";
 
 /**
@@ -30,7 +29,6 @@ interface GildataModelsResponse {
  * 模型别名映射
  */
 export const GILDATA_MODEL_ALIASES: Record<string, string> = {
-  "qwen-plus": "qwen-plus",
   "qwen2-72b": "qwen2-72b-instruct-aliyun",
   "qwen-max": "qwen-max-latest",
   "qwen-plus-aliyun": "qwen-plus-latest-aliyun",

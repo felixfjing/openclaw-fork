@@ -271,10 +271,10 @@ export class WarrenqLogin extends LitElement {
           }),
         );
 
-        // 登录成功后延迟跳转到聊天页面
+        // 登录成功后延迟跳转到综合助手聊天页面
         setTimeout(() => {
           const bp = normalizeBasePath(this.basePath);
-          const chatUrl = bp ? `${bp}/chat` : "/chat";
+          const chatUrl = bp ? `${bp}/plugins/gildata/warrenq-chat` : "/plugins/gildata/warrenq-chat";
           window.location.href = chatUrl;
         }, 1500);
       } else {

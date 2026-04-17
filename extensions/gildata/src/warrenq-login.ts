@@ -586,7 +586,7 @@ export async function createwarrenqChatRequest(
     max_tokens: 2000,
     temperature: 0.7,
   stream: false,
-  model: "qwen-plus", // 默认模型
+  model: "qwen-plus-latest", // 默认模型
   };
 
   return {

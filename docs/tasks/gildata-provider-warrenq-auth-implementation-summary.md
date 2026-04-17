@@ -111,7 +111,6 @@ async createwarrenqChatRequest(prompt, config): Promise<{headers: Record<string,
 **模型别名：**
 ```typescript
 GILDATA_MODEL_ALIASES: Record<string, string> = {
-  "qwen-plus": "qwen-plus",
   "qwen2-72b": "qwen2-72b-instruct-aliyun",
   "qwen-max": "qwen-max-latest",
   "qwen-plus-aliyun": "qwen-plus-latest-aliyun",
