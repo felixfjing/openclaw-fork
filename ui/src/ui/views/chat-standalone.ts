@@ -50,6 +50,7 @@ import {
   tokenEstimate,
 } from "./chat-standalone/interaction.ts";
 import type { ChatProps } from "./chat-standalone/types.ts";
+import "../../styles/chat-standalone.css";
 import "../components/resizable-divider.ts";
 
 export type { ChatProps } from "./chat-standalone/types.ts";
@@ -298,7 +299,7 @@ export function renderChatStandalone(props: ChatProps) {
   const tokens = tokenEstimate(props.draft);
 
   const placeholder = props.connected
-    ? "可以上传图片、文档等附件，@或“/”快速引用工具"
+    ? "可以拖拽上传图片、文档等附件，@快速引用文件，“/”快速引用技能"
     : "Connect to the gateway to start chatting...";
 
   const requestUpdate = props.onRequestUpdate ?? (() => {});
@@ -638,10 +639,7 @@ export function renderChatStandalone(props: ChatProps) {
         </div>
       </div>
       <p class="agent-chat__disclaimer">
-        <span>以上大模型生成内容，不构成任何投资建议</span>
-        <span>Copyright @ Gil-GPT</span>
-        <span>上线编号：Shanghai-GilGPT-20240521S0003</span>
-        <span class="agent-chat__disclaimer-link">免责声明</span>
+        <span>以上内容由 AI 生成，不构成任何投资建议</span>
       </p>
     </section>
   `;

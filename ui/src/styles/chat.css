@@ -4,3 +4,7 @@
 @import "./chat/tool-cards.css";
 @import "./chat/sidebar.css";
 @import "./chat/standalone.css";
+
+:root[data-theme-mode="light"] .content--chat {
+  background: #f5f7fa;
+}

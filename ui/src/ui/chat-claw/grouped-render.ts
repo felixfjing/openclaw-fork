@@ -40,7 +40,10 @@ type AssistantAttachmentAvailability =
   | { status: "available" }
   | { status: "unavailable"; reason: string; checkedAt: number };
 
-const assistantAttachmentAvailabilityCache = new Map<string, AssistantAttachmentAvailability>();
+const assistantAttachmentAvailabilityCache = new Map<
+  string,
+  AssistantAttachmentAvailability
+>();
 const ASSISTANT_ATTACHMENT_UNAVAILABLE_RETRY_MS = 5_000;
 
 export function resetAssistantAttachmentAvailabilityCacheForTest() {
@@ -71,7 +74,9 @@ function extractImages(message: unknown): ImageBlock[] {
           const data = source.data;
           const mediaType = (source.media_type as string) || "image/png";
           // If data is already a data URL, use it directly
-          const url = data.startsWith("data:") ? data : `data:${mediaType};base64,${data}`;
+          const url = data.startsWith("data:")
+            ? data
+            : `data:${mediaType};base64,${data}`;
           images.push({ url });
         } else if (typeof b.url === "string") {
           images.push({ url: b.url });
@@ -89,7 +94,10 @@ function extractImages(message: unknown): ImageBlock[] {
   return images;
 }
 
-export function renderReadingIndicatorGroup(assistant?: AssistantIdentity, basePath?: string) {
+export function renderReadingIndicatorGroup(
+  assistant?: AssistantIdentity,
+  basePath?: string,
+) {
   return html`
     <div class="chat-group assistant">
       ${renderAvatar("assistant", assistant, basePath)}
@@ -207,7 +215,8 @@ export function renderMessageGroup(
             item.message,
             item.key,
             {
-              isStreaming: group.isStreaming && index === group.messages.length - 1,
+              isStreaming:
+                group.isStreaming && index === group.messages.length - 1,
               showReasoning: opts.showReasoning,
               showToolCalls: opts.showToolCalls ?? true,
               autoExpandToolCalls: opts.autoExpandToolCalls ?? false,
@@ -229,9 +238,14 @@ export function renderMessageGroup(
           <span class="chat-sender-name">${who}</span>
           <span class="chat-group-timestamp">${timestamp}</span>
           ${renderMessageMeta(meta)}
-          ${normalizedRole === "assistant" && isTtsSupported() ? renderTtsButton(group) : nothing}
+          ${normalizedRole === "assistant" && isTtsSupported()
+            ? renderTtsButton(group)
+            : nothing}
           ${opts.onDelete
-            ? renderDeleteButton(opts.onDelete, normalizedRole === "user" ? "left" : "right")
+            ? renderDeleteButton(
+                opts.onDelete,
+                normalizedRole === "user" ? "left" : "right",
+              )
             : nothing}
         </div>
       </div>
@@ -251,7 +265,10 @@ type GroupMeta = {
   contextPercent: number | null;
 };
 
-function extractGroupMeta(group: MessageGroup, contextWindow: number | null): GroupMeta | null {
+function extractGroupMeta(
+  group: MessageGroup,
+  contextWindow: number | null,
+): GroupMeta | null {
   let input = 0;
   let output = 0;
   let cacheRead = 0;
@@ -287,7 +304,9 @@ function extractGroupMeta(group: MessageGroup, contextWindow: number | null): Gr
   }
 
   const contextPercent =
-    contextWindow && input > 0 ? Math.min(Math.round((input / contextWindow) * 100), 100) : null;
+    contextWindow && input > 0
+      ? Math.min(Math.round((input / contextWindow) * 100), 100)
+      : null;
 
   return { input, output, cacheRead, cacheWrite, cost, model, contextPercent };
 }
@@ -312,23 +331,33 @@ function renderMessageMeta(meta: GroupMeta | null) {
 
   // Token counts: ↑input ↓output
   if (meta.input) {
-    parts.push(html`<span class="msg-meta__tokens">↑${fmtTokens(meta.input)}</span>`);
+    parts.push(
+      html`<span class="msg-meta__tokens">↑${fmtTokens(meta.input)}</span>`,
+    );
   }
   if (meta.output) {
-    parts.push(html`<span class="msg-meta__tokens">↓${fmtTokens(meta.output)}</span>`);
+    parts.push(
+      html`<span class="msg-meta__tokens">↓${fmtTokens(meta.output)}</span>`,
+    );
   }
 
   // Cache: R/W
   if (meta.cacheRead) {
-    parts.push(html`<span class="msg-meta__cache">R${fmtTokens(meta.cacheRead)}</span>`);
+    parts.push(
+      html`<span class="msg-meta__cache">R${fmtTokens(meta.cacheRead)}</span>`,
+    );
   }
   if (meta.cacheWrite) {
-    parts.push(html`<span class="msg-meta__cache">W${fmtTokens(meta.cacheWrite)}</span>`);
+    parts.push(
+      html`<span class="msg-meta__cache">W${fmtTokens(meta.cacheWrite)}</span>`,
+    );
   }
 
   // Cost
   if (meta.cost > 0) {
-    parts.push(html`<span class="msg-meta__cost">$${meta.cost.toFixed(4)}</span>`);
+    parts.push(
+      html`<span class="msg-meta__cost">$${meta.cost.toFixed(4)}</span>`,
+    );
   }
 
   // Context %
@@ -346,7 +375,9 @@ function renderMessageMeta(meta: GroupMeta | null) {
   // Model
   if (meta.model) {
     // Shorten model name: strip provider prefix if present (e.g. "anthropic/claude-3.5-sonnet" → "claude-3.5-sonnet")
-    const shortModel = meta.model.includes("/") ? meta.model.split("/").pop()! : meta.model;
+    const shortModel = meta.model.includes("/")
+      ? meta.model.split("/").pop()!
+      : meta.model;
     parts.push(html`<span class="msg-meta__model">${shortModel}</span>`);
   }
 
@@ -416,7 +447,9 @@ function renderDeleteButton(onDelete: () => void, side: DeleteConfirmSide) {
 
           const cancel = popover.querySelector(".chat-delete-confirm__cancel")!;
           const yes = popover.querySelector(".chat-delete-confirm__yes")!;
-          const check = popover.querySelector(".chat-delete-confirm__check") as HTMLInputElement;
+          const check = popover.querySelector(
+            ".chat-delete-confirm__check",
+          ) as HTMLInputElement;
 
           cancel.addEventListener("click", () => popover.remove());
           yes.addEventListener("click", () => {
@@ -436,7 +469,9 @@ function renderDeleteButton(onDelete: () => void, side: DeleteConfirmSide) {
               document.removeEventListener("click", closeOnOutside, true);
             }
           };
-          requestAnimationFrame(() => document.addEventListener("click", closeOnOutside, true));
+          requestAnimationFrame(() =>
+            document.addEventListener("click", closeOnOutside, true),
+          );
         }}
       >
         ${icons.trash ?? icons.x}
@@ -506,19 +541,31 @@ function renderAvatar(
       : normalized === "assistant"
         ? html`
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-              <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16l-6.4 5.2L8 14 2 9.2h7.6z" />
+              <path
+                d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16l-6.4 5.2L8 14 2 9.2h7.6z"
+              />
             </svg>
           `
         : normalized === "tool"
           ? html`
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="18"
+                height="18"
+              >
                 <path
                   d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53a7.76 7.76 0 0 0 .07-1 7.76 7.76 0 0 0-.07-.97l2.11-1.63a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.15 7.15 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65a7.15 7.15 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64L4.57 11a7.9 7.9 0 0 0 0 1.94l-2.11 1.69a.49.49 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.4 1.08.72 1.69.98l.38 2.65c.05.24.26.42.49.42h4c.23 0 .44-.18.49-.42l.38-2.65a7.15 7.15 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.49.49 0 0 0-.12-.64z"
                 />
               </svg>
             `
           : html`
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <svg
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="18"
+                height="18"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <text
                   x="12"
@@ -571,7 +618,9 @@ function renderAvatar(
 
 function isAvatarUrl(value: string): boolean {
   return (
-    /^https?:\/\//i.test(value) || /^data:image\//i.test(value) || value.startsWith("/") // Relative paths from avatar endpoint
+    /^https?:\/\//i.test(value) ||
+    /^data:image\//i.test(value) ||
+    value.startsWith("/") // Relative paths from avatar endpoint
   );
 }
 
@@ -652,11 +701,15 @@ function normalizeLocalAttachmentPath(source: string): string | null {
   return trimmed;
 }
 
-function resolveHomeCandidatesFromRoots(localMediaPreviewRoots: readonly string[]): string[] {
+function resolveHomeCandidatesFromRoots(
+  localMediaPreviewRoots: readonly string[],
+): string[] {
   const candidates = new Set<string>();
   for (const root of localMediaPreviewRoots) {
     const normalized = canonicalizeLocalPathForComparison(root.trim());
-    const unixHome = normalized.match(/^(\/Users\/[^/]+|\/home\/[^/]+)(?:\/|$)/);
+    const unixHome = normalized.match(
+      /^(\/Users\/[^/]+|\/home\/[^/]+)(?:\/|$)/,
+    );
     if (unixHome?.[1]) {
       candidates.add(unixHome[1]);
       continue;
@@ -689,7 +742,9 @@ function isLocalAttachmentPreviewAllowed(
     ? [canonicalizeLocalPathForComparison(normalizedSource)]
     : source.trim().startsWith("~")
       ? resolveHomeCandidatesFromRoots(localMediaPreviewRoots).map((home) =>
-          canonicalizeLocalPathForComparison(source.trim().replace(/^~(?=$|[\\/])/, home)),
+          canonicalizeLocalPathForComparison(
+            source.trim().replace(/^~(?=$|[\\/])/, home),
+          ),
         )
       : [];
   if (comparableSources.length === 0) {
@@ -701,7 +756,8 @@ function isLocalAttachmentPreviewAllowed(
       normalizedRoot.length > 0 &&
       comparableSources.some(
         (comparableSource) =>
-          comparableSource === normalizedRoot || comparableSource.startsWith(`${normalizedRoot}/`),
+          comparableSource === normalizedRoot ||
+          comparableSource.startsWith(`${normalizedRoot}/`),
       )
     );
   });
@@ -716,7 +772,11 @@ function buildAssistantAttachmentUrl(
     return source;
   }
   const normalizedBasePath =
-    basePath && basePath !== "/" ? (basePath.endsWith("/") ? basePath.slice(0, -1) : basePath) : "";
+    basePath && basePath !== "/"
+      ? basePath.endsWith("/")
+        ? basePath.slice(0, -1)
+        : basePath
+      : "";
   const params = new URLSearchParams({ source });
   const normalizedToken = authToken?.trim();
   if (normalizedToken) {
@@ -730,7 +790,11 @@ function buildAssistantAttachmentMetaUrl(
   basePath?: string,
   authToken?: string | null,
 ): string {
-  const attachmentUrl = buildAssistantAttachmentUrl(source, basePath, authToken);
+  const attachmentUrl = buildAssistantAttachmentUrl(
+    source,
+    basePath,
+    authToken,
+  );
   return `${attachmentUrl}${attachmentUrl.includes("?") ? "&" : "?"}meta=1`;
 }
 
@@ -745,7 +809,11 @@ function resolveAssistantAttachmentAvailability(
     return { status: "available" };
   }
   if (!isLocalAttachmentPreviewAllowed(source, localMediaPreviewRoots)) {
-    return { status: "unavailable", reason: "Outside allowed folders", checkedAt: Date.now() };
+    return {
+      status: "unavailable",
+      reason: "Outside allowed folders",
+      checkedAt: Date.now(),
+    };
   }
   const normalizedAuthToken = authToken?.trim() ?? "";
   const cacheKey = `${basePath ?? ""}::${normalizedAuthToken}::${source}`;
@@ -773,7 +841,9 @@ function resolveAssistantAttachmentAvailability(
           reason?: string;
         } | null;
         if (payload?.available === true) {
-          assistantAttachmentAvailabilityCache.set(cacheKey, { status: "available" });
+          assistantAttachmentAvailabilityCache.set(cacheKey, {
+            status: "available",
+          });
         } else {
           assistantAttachmentAvailabilityCache.set(cacheKey, {
             status: "unavailable",
@@ -811,16 +881,23 @@ function renderAssistantAttachmentStatusCard(params: {
           ? icons.monitor
           : icons.paperclip;
   return html`
-    <div class="chat-assistant-attachment-card chat-assistant-attachment-card--blocked">
+    <div
+      class="chat-assistant-attachment-card chat-assistant-attachment-card--blocked"
+    >
       <div class="chat-assistant-attachment-card__header">
         <span class="chat-assistant-attachment-card__icon">${icon}</span>
-        <span class="chat-assistant-attachment-card__title">${params.label}</span>
-        <span class="chat-assistant-attachment-badge chat-assistant-attachment-badge--muted"
+        <span class="chat-assistant-attachment-card__title"
+          >${params.label}</span
+        >
+        <span
+          class="chat-assistant-attachment-badge chat-assistant-attachment-badge--muted"
           >${params.badge}</span
         >
       </div>
       ${params.reason
-        ? html`<div class="chat-assistant-attachment-card__reason">${params.reason}</div>`
+        ? html`<div class="chat-assistant-attachment-card__reason">
+            ${params.reason}
+          </div>`
         : nothing}
     </div>
   `;
@@ -855,8 +932,14 @@ function renderAssistantAttachments(
             return renderAssistantAttachmentStatusCard({
               kind: "image",
               label: attachment.label,
-              badge: availability.status === "checking" ? "Checking..." : "Unavailable",
-              reason: availability.status === "unavailable" ? availability.reason : undefined,
+              badge:
+                availability.status === "checking"
+                  ? "Checking..."
+                  : "Unavailable",
+              reason:
+                availability.status === "unavailable"
+                  ? availability.reason
+                  : undefined,
             });
           }
           return html`
@@ -864,26 +947,39 @@ function renderAssistantAttachments(
               src=${attachmentUrl}
               alt=${attachment.label}
               class="chat-message-image"
-              @click=${() => openExternalUrlSafe(attachmentUrl, { allowDataImage: true })}
+              @click=${() =>
+                openExternalUrlSafe(attachmentUrl, { allowDataImage: true })}
             />
           `;
         }
         if (attachment.kind === "audio") {
           return html`
-            <div class="chat-assistant-attachment-card chat-assistant-attachment-card--audio">
+            <div
+              class="chat-assistant-attachment-card chat-assistant-attachment-card--audio"
+            >
               <div class="chat-assistant-attachment-card__header">
-                <span class="chat-assistant-attachment-card__title">${attachment.label}</span>
+                <span class="chat-assistant-attachment-card__title"
+                  >${attachment.label}</span
+                >
                 ${!attachmentUrl
                   ? html`<span
                       class="chat-assistant-attachment-badge chat-assistant-attachment-badge--muted"
-                      >${availability.status === "checking" ? "Checking..." : "Unavailable"}</span
+                      >${availability.status === "checking"
+                        ? "Checking..."
+                        : "Unavailable"}</span
                     >`
                   : attachment.isVoiceNote
-                    ? html`<span class="chat-assistant-attachment-badge">Voice note</span>`
+                    ? html`<span class="chat-assistant-attachment-badge"
+                        >Voice note</span
+                      >`
                     : nothing}
               </div>
               ${attachmentUrl
-                ? html`<audio controls preload="metadata" src=${attachmentUrl}></audio>`
+                ? html`<audio
+                    controls
+                    preload="metadata"
+                    src=${attachmentUrl}
+                  ></audio>`
                 : availability.status === "unavailable"
                   ? html`<div class="chat-assistant-attachment-card__reason">
                       ${availability.reason}
@@ -897,12 +993,20 @@ function renderAssistantAttachments(
             return renderAssistantAttachmentStatusCard({
               kind: "video",
               label: attachment.label,
-              badge: availability.status === "checking" ? "Checking..." : "Unavailable",
-              reason: availability.status === "unavailable" ? availability.reason : undefined,
+              badge:
+                availability.status === "checking"
+                  ? "Checking..."
+                  : "Unavailable",
+              reason:
+                availability.status === "unavailable"
+                  ? availability.reason
+                  : undefined,
             });
           }
           return html`
-            <div class="chat-assistant-attachment-card chat-assistant-attachment-card--video">
+            <div
+              class="chat-assistant-attachment-card chat-assistant-attachment-card--video"
+            >
               <video controls preload="metadata" src=${attachmentUrl}></video>
               <a
                 class="chat-assistant-attachment-card__link"
@@ -918,13 +1022,21 @@ function renderAssistantAttachments(
           return renderAssistantAttachmentStatusCard({
             kind: "document",
             label: attachment.label,
-            badge: availability.status === "checking" ? "Checking..." : "Unavailable",
-            reason: availability.status === "unavailable" ? availability.reason : undefined,
+            badge:
+              availability.status === "checking"
+                ? "Checking..."
+                : "Unavailable",
+            reason:
+              availability.status === "unavailable"
+                ? availability.reason
+                : undefined,
           });
         }
         return html`
           <div class="chat-assistant-attachment-card">
-            <span class="chat-assistant-attachment-card__icon">${icons.paperclip}</span>
+            <span class="chat-assistant-attachment-card__icon"
+              >${icons.paperclip}</span
+            >
             <a
               class="chat-assistant-attachment-card__link"
               href=${attachmentUrl}
@@ -955,9 +1067,14 @@ function renderInlineToolCards(
     <div class="chat-tools-inline">
       ${toolCards.map((card, index) =>
         renderToolCard(card, {
-          expanded: opts.isToolExpanded?.(`${opts.messageKey}:toolcard:${index}`) ?? false,
+          expanded:
+            opts.isToolExpanded?.(`${opts.messageKey}:toolcard:${index}`) ??
+            false,
           onToggleExpanded: opts.onToggleToolExpanded
-            ? () => opts.onToggleToolExpanded?.(`${opts.messageKey}:toolcard:${index}`)
+            ? () =>
+                opts.onToggleToolExpanded?.(
+                  `${opts.messageKey}:toolcard:${index}`,
+                )
             : () => undefined,
           onOpenSidebar: opts.onOpenSidebar,
           canvasHostUrl: opts.canvasHostUrl,
@@ -988,7 +1105,10 @@ function detectJson(text: string): { parsed: unknown; pretty: string } | null {
     return null;
   }
 
-  if ((t.startsWith("{") && t.endsWith("}")) || (t.startsWith("[") && t.endsWith("]"))) {
+  if (
+    (t.startsWith("{") && t.endsWith("}")) ||
+    (t.startsWith("[") && t.endsWith("]"))
+  ) {
     try {
       const parsed = JSON.parse(t);
       return { parsed, pretty: JSON.stringify(parsed, null, 2) };
@@ -1014,7 +1134,10 @@ function jsonSummaryLabel(parsed: unknown): string {
   return "JSON";
 }
 
-function renderExpandButton(markdown: string, onOpenSidebar: (content: SidebarContent) => void) {
+function renderExpandButton(
+  markdown: string,
+  onOpenSidebar: (content: SidebarContent) => void,
+) {
   return html`
     <button
       class="btn btn--xs chat-expand-btn"
@@ -1023,7 +1146,9 @@ function renderExpandButton(markdown: string, onOpenSidebar: (content: SidebarCo
       aria-label="Open in canvas"
       @click=${() => onOpenSidebar({ kind: "markdown", content: markdown })}
     >
-      <span class="chat-expand-btn__icon" aria-hidden="true">${icons.panelRightOpen}</span>
+      <span class="chat-expand-btn__icon" aria-hidden="true"
+        >${icons.panelRightOpen}</span
+      >
     </button>
   `;
 }
@@ -1060,7 +1185,8 @@ function renderGroupedMessage(
     typeof m.toolCallId === "string" ||
     typeof m.tool_call_id === "string";
 
-  const toolCards = (opts.showToolCalls ?? true) ? extractToolCards(message, messageKey) : [];
+  const toolCards =
+    (opts.showToolCalls ?? true) ? extractToolCards(message, messageKey) : [];
   const hasToolCards = toolCards.length > 0;
   const images = extractImages(message);
   const hasImages = images.length > 0;
@@ -1080,20 +1206,31 @@ function renderGroupedMessage(
       item.type === "attachment",
   );
   const assistantViewBlocks = normalizedMessage.content.filter(
-    (item): item is Extract<MessageContentItem, { type: "canvas" }> => item.type === "canvas",
+    (item): item is Extract<MessageContentItem, { type: "canvas" }> =>
+      item.type === "canvas",
   );
   const extractedThinking =
-    opts.showReasoning && role === "assistant" ? extractThinkingCached(message) : null;
+    opts.showReasoning && role === "assistant"
+      ? extractThinkingCached(message)
+      : null;
   const markdownBase = extractedText?.trim() ? extractedText : null;
-  const reasoningMarkdown = extractedThinking ? formatReasoningMarkdown(extractedThinking) : null;
+  const reasoningMarkdown = extractedThinking
+    ? formatReasoningMarkdown(extractedThinking)
+    : null;
   const markdown = markdownBase;
   const canCopyMarkdown = role === "assistant" && Boolean(markdown?.trim());
-  const canExpand = role === "assistant" && Boolean(onOpenSidebar && markdown?.trim());
+  const canExpand =
+    role === "assistant" && Boolean(onOpenSidebar && markdown?.trim());
 
   // Detect pure-JSON messages and render as collapsible block
-  const jsonResult = markdown && !opts.isStreaming ? detectJson(markdown) : null;
+  const jsonResult =
+    markdown && !opts.isStreaming ? detectJson(markdown) : null;
 
-  const bubbleClasses = ["chat-bubble", opts.isStreaming ? "streaming" : "", "fade-in"]
+  const bubbleClasses = [
+    "chat-bubble",
+    opts.isStreaming ? "streaming" : "",
+    "fade-in",
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -1112,14 +1249,17 @@ function renderGroupedMessage(
 
   const isToolMessage = normalizedRole === "tool" || isToolResult;
   const toolMessageDisclosureId = `toolmsg:${messageKey}`;
-  const toolMessageExpanded = opts.isToolMessageExpanded?.(toolMessageDisclosureId) ?? false;
+  const toolMessageExpanded =
+    opts.isToolMessageExpanded?.(toolMessageDisclosureId) ?? false;
   const toolNames = [...new Set(toolCards.map((c) => c.name))];
   const toolSummaryLabel =
     toolNames.length <= 3
       ? toolNames.join(", ")
       : `${toolNames.slice(0, 2).join(", ")} +${toolNames.length - 2} more`;
   const toolPreview =
-    markdown && !toolSummaryLabel ? markdown.trim().replace(/\s+/g, " ").slice(0, 120) : "";
+    markdown && !toolSummaryLabel
+      ? markdown.trim().replace(/\s+/g, " ").slice(0, 120)
+      : "";
   const singleToolCard = toolCards.length === 1 ? toolCards[0] : null;
   const toolMessageLabel =
     singleToolCard && !markdown && !hasImages
@@ -1135,7 +1275,9 @@ function renderGroupedMessage(
       ${renderReplyPill(normalizedMessage.replyTarget)}
       ${hasActions
         ? html`<div class="chat-bubble-actions">
-            ${canExpand ? renderExpandButton(markdown!, onOpenSidebar!) : nothing}
+            ${canExpand
+              ? renderExpandButton(markdown!, onOpenSidebar!)
+              : nothing}
             ${canCopyMarkdown ? renderCopyAsMarkdownButton(markdown!) : nothing}
           </div>`
         : nothing}
@@ -1150,14 +1292,21 @@ function renderGroupedMessage(
                 class="chat-tool-msg-summary"
                 type="button"
                 aria-expanded=${String(toolMessageExpanded)}
-                @click=${() => opts.onToggleToolMessageExpanded?.(toolMessageDisclosureId)}
+                @click=${() =>
+                  opts.onToggleToolMessageExpanded?.(toolMessageDisclosureId)}
               >
                 <span class="chat-tool-msg-summary__icon">${icons.zap}</span>
-                <span class="chat-tool-msg-summary__label">${toolMessageLabel}</span>
+                <span class="chat-tool-msg-summary__label"
+                  >${toolMessageLabel}</span
+                >
                 ${toolSummaryLabel
-                  ? html`<span class="chat-tool-msg-summary__names">${toolSummaryLabel}</span>`
+                  ? html`<span class="chat-tool-msg-summary__names"
+                      >${toolSummaryLabel}</span
+                    >`
                   : toolPreview
-                    ? html`<span class="chat-tool-msg-summary__preview">${toolPreview}</span>`
+                    ? html`<span class="chat-tool-msg-summary__preview"
+                        >${toolPreview}</span
+                      >`
                     : nothing}
               </button>
               ${toolMessageExpanded
@@ -1173,7 +1322,9 @@ function renderGroupedMessage(
                       )}
                       ${reasoningMarkdown
                         ? html`<div class="chat-thinking">
-                            ${unsafeHTML(toSanitizedMarkdownHtml(reasoningMarkdown))}
+                            ${unsafeHTML(
+                              toSanitizedMarkdownHtml(reasoningMarkdown),
+                            )}
                           </div>`
                         : nothing}
                       ${jsonResult
@@ -1187,10 +1338,15 @@ function renderGroupedMessage(
                                 >${jsonSummaryLabel(jsonResult.parsed)}</span
                               >
                             </summary>
-                            <pre class="chat-json-content"><code>${jsonResult.pretty}</code></pre>
+                            <pre
+                              class="chat-json-content"
+                            ><code>${jsonResult.pretty}</code></pre>
                           </details>`
                         : markdown
-                          ? html`<div class="chat-text" dir="${detectTextDirection(markdown)}">
+                          ? html`<div
+                              class="chat-text"
+                              dir="${detectTextDirection(markdown)}"
+                            >
                               ${unsafeHTML(toSanitizedMarkdownHtml(markdown))}
                             </div>`
                           : nothing}
@@ -1209,8 +1365,10 @@ function renderGroupedMessage(
                               isToolExpanded: opts.isToolExpanded,
                               onToggleToolExpanded: opts.onToggleToolExpanded,
                               canvasHostUrl: opts.canvasHostUrl,
-                              embedSandboxMode: opts.embedSandboxMode ?? "scripts",
-                              allowExternalEmbedUrls: opts.allowExternalEmbedUrls ?? false,
+                              embedSandboxMode:
+                                opts.embedSandboxMode ?? "scripts",
+                              allowExternalEmbedUrls:
+                                opts.allowExternalEmbedUrls ?? false,
                             })
                         : nothing}
                     </div>
@@ -1234,25 +1392,35 @@ function renderGroupedMessage(
               : nothing}
             ${normalizedRole === "assistant" && assistantViewBlocks.length > 0
               ? html`${assistantViewBlocks.map(
-                  (block) => html`${renderToolPreview(block.preview, "chat_message", {
-                    onOpenSidebar,
-                    rawText: block.rawText ?? null,
-                    canvasHostUrl: opts.canvasHostUrl,
-                    embedSandboxMode: opts.embedSandboxMode ?? "scripts",
-                  })}
-                  ${block.rawText ? renderRawOutputToggle(block.rawText) : nothing}`,
+                  (block) =>
+                    html`${renderToolPreview(block.preview, "chat_message", {
+                      onOpenSidebar,
+                      rawText: block.rawText ?? null,
+                      canvasHostUrl: opts.canvasHostUrl,
+                      embedSandboxMode: opts.embedSandboxMode ?? "scripts",
+                    })}
+                    ${block.rawText
+                      ? renderRawOutputToggle(block.rawText)
+                      : nothing}`,
                 )}`
               : nothing}
             ${jsonResult
               ? html`<details class="chat-json-collapse">
                   <summary class="chat-json-summary">
                     <span class="chat-json-badge">JSON</span>
-                    <span class="chat-json-label">${jsonSummaryLabel(jsonResult.parsed)}</span>
+                    <span class="chat-json-label"
+                      >${jsonSummaryLabel(jsonResult.parsed)}</span
+                    >
                   </summary>
-                  <pre class="chat-json-content"><code>${jsonResult.pretty}</code></pre>
+                  <pre
+                    class="chat-json-content"
+                  ><code>${jsonResult.pretty}</code></pre>
                 </details>`
               : markdown
-                ? html`<div class="chat-text" dir="${detectTextDirection(markdown)}">
+                ? html`<div
+                    class="chat-text"
+                    dir="${detectTextDirection(markdown)}"
+                  >
                     ${unsafeHTML(toSanitizedMarkdownHtml(markdown))}
                   </div>`
                 : nothing}

@@ -30,6 +30,14 @@
   display: none;
 }
 
+.chat--standalone .chat-bubble {
+  background: transparent;
+}
+
+.chat--standalone .chat-group-messages .chat-bubble {
+  background: transparent;
+}
+
 @supports (backdrop-filter: blur(1px)) {
   .chat--standalone .agent-chat__input {
     backdrop-filter: blur(14px) saturate(1.4);
