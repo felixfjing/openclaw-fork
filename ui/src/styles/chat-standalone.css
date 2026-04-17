@@ -392,6 +392,7 @@
   border-radius: 8px;
   background: #d6ebff;
   font-size: 14px;
+  box-shadow: none;
 }
 
 .chat--standalone
@@ -401,6 +402,7 @@
   padding: 10px 0;
   border: none;
   background: transparent;
+  box-shadow: none;
 }
 
 .chat--standalone .chat-standalone__empty-state {
