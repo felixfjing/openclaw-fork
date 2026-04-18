@@ -3,7 +3,6 @@ import {
   type GatewayUpdateAvailableEventPayload,
 } from "../../../src/gateway/events.js";
 import {
-  CHAT_SESSIONS_ACTIVE_MINUTES,
   clearPendingQueueItemsForRun,
   flushChatQueueForEvent,
 } from "./app-chat.ts";

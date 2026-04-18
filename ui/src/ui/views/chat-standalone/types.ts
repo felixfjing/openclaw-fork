@@ -1,12 +1,10 @@
-import type {
-  CompactionStatus,
-  FallbackStatus,
-} from "../../app-tool-stream.ts";
-import type { ChatModelSelectState } from "../../chat-model-select-state.ts";
+import type { CompactionStatus, FallbackStatus } from "../../app-tool-stream.ts";
 import type { ChatSideResult } from "../../chat-claw/side-result.ts";
+import type { ChatModelSelectState } from "../../chat-model-select-state.ts";
 import type { EmbedSandboxMode } from "../../embed-sandbox.ts";
 import type { SidebarContent } from "../../sidebar-content.ts";
 import type { SessionsListResult } from "../../types.ts";
+import type { CronJob } from "../../types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../../ui-types.ts";
 
 export type ChatProps = {
@@ -29,6 +27,8 @@ export type ChatProps = {
   assistantAvatarUrl?: string | null;
   draft: string;
   queue: ChatQueueItem[];
+  cronJobs?: CronJob[];
+  loadCron?: () => void | Promise<void>;
   connected: boolean;
   canSend: boolean;
   disabledReason: string | null;

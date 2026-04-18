@@ -79,6 +79,7 @@ function createHost(agentsPanel: AgentsPanel): Parameters<typeof refreshActiveTa
     theme: "claw",
     themeMode: "system",
     themeResolved: "dark",
+    chatStandalone: false,
     applySessionKey: "main",
     sessionKey: "main",
     chatHasAutoScrolled: false,
