@@ -62,6 +62,7 @@ import { resolveRequestClientIp } from "./net.js";
 import { DEDUPE_MAX, DEDUPE_TTL_MS } from "./server-constants.js";
 import { authorizeCanvasRequest, isCanvasPath } from "./server/http-auth.js";
 import { resolvePluginRouteRuntimeOperatorScopes } from "./server/plugin-route-runtime-scopes.js";
+import { isSetupPath, handleSetupRequest } from "./server/setup-http-stages.js";
 import {
   isProtectedPluginRoutePathFromContext,
   resolvePluginRoutePathContext,
@@ -1042,6 +1043,14 @@ export function createGatewayHttpServer(opts: {
           rateLimiter,
         }),
       );
+
+      // Setup wizard API (before control-ui to prevent SPA fallback)
+      if (isSetupPath(requestPath)) {
+        requestStages.push({
+          name: "setup-api",
+          run: () => handleSetupRequest(req, res),
+        });
+      }
 
       if (controlUiEnabled) {
         requestStages.push({

@@ -360,8 +360,14 @@ function resolveTranscriptUsageFallback(params: {
   if (!snapshot) {
     return null;
   }
-  const modelProvider = snapshot.modelProvider ?? params.fallbackProvider;
-  const model = snapshot.model ?? params.fallbackModel;
+  // "openclaw" is an internal provider for injected/mirrored messages; skip it.
+  const snapshotIsOpenClawInternal = snapshot.modelProvider === "openclaw";
+  const modelProvider = snapshotIsOpenClawInternal
+    ? params.fallbackProvider
+    : (snapshot.modelProvider ?? params.fallbackProvider);
+  const model = snapshotIsOpenClawInternal
+    ? params.fallbackModel
+    : (snapshot.model ?? params.fallbackModel);
   const contextTokens = resolveContextTokensForModel({
     cfg: params.cfg,
     provider: modelProvider,
@@ -1070,7 +1076,10 @@ export function resolveSessionModelIdentityRef(
 ): { provider?: string; model: string } {
   const runtimeModel = entry?.model?.trim();
   const runtimeProvider = entry?.modelProvider?.trim();
-  if (runtimeModel) {
+  // "openclaw" is an internal provider used for injected/mirrored messages
+  // (e.g. "gateway-injected", "delivery-mirror"), not a real model identity.
+  const isOpenClawInternal = runtimeProvider === "openclaw";
+  if (runtimeModel && !isOpenClawInternal) {
     if (runtimeProvider) {
       return { provider: runtimeProvider, model: runtimeModel };
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -159,6 +159,30 @@ function resolveScriptAction(action) {
   return null;
 }
 
+function prepareDev() {
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+  const scripts = [
+    { name: "download-uv.mjs", label: "uv" },
+    { name: "prepare-preinstalled-skills.mjs", label: "skills" },
+  ];
+
+  for (const { name, label } of scripts) {
+    const scriptPath = path.join(scriptDir, name);
+    if (!fs.existsSync(scriptPath)) continue;
+    try {
+      execFileSync(process.execPath, [scriptPath], {
+        cwd: path.resolve(scriptDir, ".."),
+        stdio: "pipe",
+        timeout: 120_000,
+      });
+    } catch (err) {
+      // 准备步骤失败不阻断开发服务器启动
+      const stderr = err.stderr?.toString().trim() || err.message;
+      console.warn(`[ui:dev] ${label} 准备步骤失败（非致命）: ${stderr}`);
+    }
+  }
+}
+
 export function main(argv = process.argv.slice(2)) {
   const [action, ...rest] = argv;
   if (!action) {
@@ -187,6 +211,10 @@ export function main(argv = process.argv.slice(2)) {
     const installEnv = process.env;
     const installArgs = ["install"];
     runSync(runner.cmd, installArgs, installEnv);
+  }
+
+  if (action === "dev") {
+    prepareDev();
   }
 
   run(runner.cmd, ["run", script, ...rest]);
