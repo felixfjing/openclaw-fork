@@ -4,6 +4,7 @@ import { InputHistory } from "../../chat-claw/input-history.ts";
 import {
   SLASH_COMMANDS,
   getSlashCommandCompletions,
+  refreshSlashCommands,
   type SlashCommandDef,
 } from "../../chat-claw/slash-commands.ts";
 import { chatViewState } from "./state.ts";

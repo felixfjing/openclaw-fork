@@ -444,6 +444,7 @@
 }
 
 .chat--standalone .agent-chat__input {
+  position: relative;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2396,4 +2397,145 @@
   line-height: 20px;
   color: #7f8bb7;
   white-space: nowrap;
+}
+
+/* ── Slash menu ─────────────────────────────────── */
+
+.slash-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e0e2e8;
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  z-index: 30;
+  margin-bottom: 4px;
+  padding: 6px;
+  scrollbar-width: thin;
+}
+
+.slash-menu-group + .slash-menu-group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.slash-menu-group__label {
+  padding: 4px 10px 2px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0080ff;
+  opacity: 0.7;
+}
+
+.slash-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.slash-menu-item:hover,
+.slash-menu-item--active {
+  background: rgba(0, 128, 255, 0.08);
+}
+
+.slash-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #0080ff;
+  opacity: 0.7;
+}
+
+.slash-menu-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slash-menu-item--active .slash-menu-icon,
+.slash-menu-item:hover .slash-menu-icon {
+  opacity: 1;
+}
+
+.slash-menu-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: #0080ff;
+  white-space: nowrap;
+}
+
+.slash-menu-args {
+  font-size: 0.75rem;
+  color: #999;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  opacity: 0.65;
+}
+
+.slash-menu-desc {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.slash-menu-item--active .slash-menu-name {
+  color: #0067cc;
+}
+
+.slash-menu-item--active .slash-menu-desc {
+  color: #333;
+}
+
+.slash-menu-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 128, 255, 0.1);
+  color: #0080ff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slash-menu-footer {
+  display: flex;
+  gap: 10px;
+  padding: 6px 10px 4px;
+  font-size: 0.68rem;
+  color: #999;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 4px;
+}
+
+.slash-menu-footer kbd {
+  display: inline-block;
+  padding: 1px 4px;
+  font-size: 0.65rem;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  border: 1px solid #e0e2e8;
+  border-radius: 3px;
+  background: #f5f7fa;
+  line-height: 1.3;
 }

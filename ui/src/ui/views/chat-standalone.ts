@@ -9,6 +9,7 @@ import {
 } from "../chat-claw/grouped-render.ts";
 import { isSttSupported, startStt, stopStt } from "../chat-claw/speech.ts";
 import { buildSidebarContent } from "../chat-claw/tool-cards.ts";
+import { refreshSlashCommands } from "../chat-claw/slash-commands.ts";
 import { icons } from "../icons.ts";
 import { detectTextDirection } from "../text-direction.ts";
 import type { GatewaySessionRow } from "../types.ts";
@@ -534,6 +535,7 @@ export function renderChatStandalone(props: ChatProps) {
 
   if (!chatViewState.skillsListLoaded && props.connected && props.client) {
     void loadSkillsList(props.client).then(() => requestUpdate());
+    void refreshSlashCommands({ client: props.client, agentId: props.currentAgentId }).then(() => requestUpdate());
   }
 
   const placeholder = props.connected
