@@ -207,6 +207,17 @@ export async function fetchGildataModels(params: {
   }
 }
 
+// gildata API 返回的 context_length 可能偏小，按模型 ID 覆盖为实际值
+const KNOWN_CONTEXT_WINDOWS: Record<string, number> = {
+  "qwen-plus-latest": 131072,
+  "qwen-max-latest": 32768,
+  "qwen2-72b-instruct-aliyun": 131072,
+};
+
+function resolveContextWindow(modelId: string, apiValue?: number): number {
+  return KNOWN_CONTEXT_WINDOWS[modelId] ?? apiValue ?? 4096;
+}
+
 /**
  * 将Gildata模型转换为OpenClaw模型定义
  */
@@ -226,7 +237,7 @@ export function convertGildataModelToModelDefinition(
       output: model.pricing?.output ?? 0.002,
       currency: model.pricing?.currency ?? "USD",
     },
-    contextWindow: model.context_length ?? 4096,
+    contextWindow: resolveContextWindow(model.id, model.context_length),
     maxTokens: model.max_tokens ?? 4096,
   };
 }

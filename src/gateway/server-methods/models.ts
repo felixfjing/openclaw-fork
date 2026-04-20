@@ -1,5 +1,5 @@
-import { DEFAULT_PROVIDER } from "../../agents/defaults.js";
-import { buildAllowedModelSet } from "../../agents/model-selection.js";
+import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../../agents/defaults.js";
+import { buildAllowedModelSet, resolveConfiguredModelRef } from "../../agents/model-selection.js";
 import { loadConfig } from "../../config/config.js";
 import {
   ErrorCodes,
@@ -30,7 +30,19 @@ export const modelsHandlers: GatewayRequestHandlers = {
         catalog,
         defaultProvider: DEFAULT_PROVIDER,
       });
-      const models = allowedCatalog.length > 0 ? allowedCatalog : catalog;
+      let models = allowedCatalog.length > 0 ? allowedCatalog : catalog;
+
+      // 按默认模型所属 provider 过滤：只展示默认 provider 提供的模型
+      const defaultRef = resolveConfiguredModelRef({
+        cfg,
+        defaultProvider: DEFAULT_PROVIDER,
+        defaultModel: DEFAULT_MODEL,
+      });
+      if (defaultRef.provider !== DEFAULT_PROVIDER) {
+        const providerId = defaultRef.provider.toLowerCase();
+        models = models.filter((m) => m.provider.toLowerCase() === providerId);
+      }
+
       respond(true, { models }, undefined);
     } catch (err) {
       respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, String(err)));

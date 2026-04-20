@@ -71,6 +71,11 @@ function renderSessionSidebar(
     : sessions;
   return html`
     <aside class="chat-session-sidebar">
+      <div class="chat-session-sidebar__workspace">
+        <span class="chat-session-sidebar__workspace-name">WarrenQ_workspace</span>
+        <span class="chat-session-sidebar__workspace-caret">${icons.caretDownFill}</span>
+      </div>
+
       <div class="chat-session-sidebar__new-wrap">
         <button
           class="chat-session-sidebar__new"
@@ -85,14 +90,16 @@ function renderSessionSidebar(
         </button>
       </div>
 
-      <div class="chat-session-sidebar__section-title">对话列表</div>
+      <div class="chat-session-sidebar__section-title">
+        <span>对话列表</span>
+      </div>
 
-      <label class="chat-session-sidebar__search" aria-label="搜索对话名称">
+      <label class="chat-session-sidebar__search" aria-label="搜索对话">
         <span class="chat-session-sidebar__search-icon">${icons.search}</span>
         <input
           class="chat-session-sidebar__search-input"
           type="search"
-          placeholder="搜索对话名称"
+          placeholder="搜索对话"
           .value=${chatViewState.sessionSidebarSearch}
           @input=${(event: Event) => {
             chatViewState.sessionSidebarSearch = (
@@ -114,31 +121,38 @@ function renderSessionSidebar(
               (session) => {
                 const active = session.key === props.sessionKey;
                 const label = resolveSessionLabel(session);
-                const updated = formatSessionTimestamp(session.updatedAt);
                 return html`
-                  <button
-                    class=${`chat-session-sidebar__item ${active ? "chat-session-sidebar__item--active" : ""}`}
-                    type="button"
-                    role="listitem"
-                    aria-current=${active ? "true" : "false"}
-                    title=${label}
-                    @click=${() => {
-                      if (props.onSessionSelect) {
-                        props.onSessionSelect(session.key);
-                        return;
-                      }
-                      props.onSessionKeyChange(session.key);
-                    }}
-                  >
-                    <span class="chat-session-sidebar__item-main">
-                      <span class="chat-session-sidebar__item-title"
-                        >${label}</span
-                      >
-                      <span class="chat-session-sidebar__item-subtitle"
-                        >${updated}</span
-                      >
-                    </span>
-                  </button>
+                  <div class="chat-session-sidebar__item-wrap">
+                    <button
+                      class=${`chat-session-sidebar__item ${active ? "chat-session-sidebar__item--active" : ""}`}
+                      type="button"
+                      role="listitem"
+                      aria-current=${active ? "true" : "false"}
+                      title=${label}
+                      @click=${() => {
+                        if (props.onSessionSelect) {
+                          props.onSessionSelect(session.key);
+                          return;
+                        }
+                        props.onSessionKeyChange(session.key);
+                      }}
+                    >
+                      <span class="chat-session-sidebar__item-icon"></span>
+                      <span class="chat-session-sidebar__item-title">${label}</span>
+                    </button>
+                    <button
+                      class="chat-session-sidebar__item-delete"
+                      type="button"
+                      title="删除对话"
+                      aria-label="删除对话"
+                      @click=${(e: Event) => {
+                        e.stopPropagation();
+                        if (props.onDeleteSession) {
+                          void props.onDeleteSession(session.key);
+                        }
+                      }}
+                    >${icons.trash}</button>
+                  </div>
                 `;
               },
             )}

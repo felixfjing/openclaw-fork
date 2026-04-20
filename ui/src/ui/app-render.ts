@@ -176,6 +176,7 @@ const lazyLogs = createLazy(() => import("./views/logs.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
 const lazySessions = createLazy(() => import("./views/sessions.ts"));
 const lazySkills = createLazy(() => import("./views/skills.ts"));
+const lazySetup = createLazy(() => import("./views/setup/setup-wizard.ts"));
 
 function formatDreamNextCycle(nextRunAtMs: number | undefined): string | null {
   if (typeof nextRunAtMs !== "number" || !Number.isFinite(nextRunAtMs)) {
@@ -610,6 +611,15 @@ export function renderApp(state: AppViewState) {
     onSessionSelect: (key) => {
       switchChatSession(state, key);
     },
+    onDeleteSession: async (key) => {
+      const deleted = await deleteSessionsAndRefresh(state, [key]);
+      if (deleted.length > 0 && state.sessionKey === key) {
+        const remaining = state.sessions?.sessions ?? [];
+        if (remaining.length > 0) {
+          switchChatSession(state, remaining[0].key);
+        }
+      }
+    },
     showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
     onScrollToBottom: () => state.scrollToBottom(),
     // Sidebar props for tool output viewing
@@ -681,6 +691,7 @@ export function renderApp(state: AppViewState) {
   );
   const visibleCronJobs = getVisibleCronJobs(state);
   chatProps.cronJobs = visibleCronJobs;
+  chatProps.client = state.client;
   const selectedDeliveryChannel =
     state.cronForm.deliveryChannel && state.cronForm.deliveryChannel.trim()
       ? state.cronForm.deliveryChannel.trim()
@@ -1278,6 +1289,24 @@ export function renderApp(state: AppViewState) {
               onNavigate: (tab) => state.setTab(tab as import("./navigation.ts").Tab),
               onRefreshLogs: () => state.loadOverview({ refresh: true }),
             })
+          : nothing}
+        ${state.tab === "setup"
+          ? lazyRender(lazySetup, (m) =>
+              m.renderSetupWizard({
+                state: {
+                  ...state.setupWizardState,
+                  gatewayUrl: state.settings.gatewayUrl,
+                },
+                gatewayUrl: state.settings.gatewayUrl,
+                onNavigate: (tab) => state.setTab(tab),
+                onStateChange: (patch) => {
+                  state.setupWizardState = {
+                    ...state.setupWizardState,
+                    ...patch,
+                  };
+                },
+              }),
+            )
           : nothing}
         ${state.tab === "channels"
           ? lazyRender(lazyChannels, (m) =>

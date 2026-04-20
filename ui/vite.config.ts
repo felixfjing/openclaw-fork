@@ -36,7 +36,6 @@ export default defineConfig(() => {
       rollupOptions: {
         input: {
           main: path.resolve(here, "index.html"),
-          "warrenq-chat": path.resolve(here, "warrenq-chat.html"),
         },
       },
     },

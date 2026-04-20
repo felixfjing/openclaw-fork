@@ -45,7 +45,8 @@ export type Tab =
   | "aiAgents"
   | "debug"
   | "logs"
-  | "dreams";
+  | "dreams"
+  | "setup";
 
 const TAB_PATHS: Record<Tab, string> = {
   agents: "/agents",
@@ -67,6 +68,7 @@ const TAB_PATHS: Record<Tab, string> = {
   debug: "/debug",
   logs: "/logs",
   dreams: "/dreaming",
+  setup: "/setup",
 };
 
 const PATH_ALIASES: Record<string, Tab> = {

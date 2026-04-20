@@ -11,8 +11,8 @@ services:
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
       TZ: ${OPENCLAW_TZ:-UTC}
     volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - /Users/hudan/.openclaw:/home/node/.openclaw
+      - /Users/hudan/.openclaw:/home/node/.openclaw/workspace
       ## Uncomment the lines below to enable sandbox isolation
       ## (agents.defaults.sandbox). Requires Docker CLI in the image
       ## (build with --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1) or use
@@ -24,6 +24,9 @@ services:
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    # 允许容器解析公司内部 DNS 域名（Gildata/WarrenQ chat API 所需）
+    extra_hosts:
+      - "aigwtest.in.gildata.com:10.106.24.13"
     init: true
     restart: unless-stopped
     command:
@@ -68,8 +71,8 @@ services:
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
       TZ: ${OPENCLAW_TZ:-UTC}
     volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - /Users/hudan/.openclaw:/home/node/.openclaw
+      - /Users/hudan/.openclaw:/home/node/.openclaw/workspace
     stdin_open: true
     tty: true
     init: true

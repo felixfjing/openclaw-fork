@@ -130,13 +130,13 @@
 .chat-standalone__shell > .chat-session-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   width: 240px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 8px;
-  border-right: none;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border-right: 1px solid #e6e8eb;
+  border-radius: 0;
   background: #fff;
   box-shadow: none;
   overflow: hidden;
@@ -144,6 +144,43 @@
   top: 10px;
   align-self: start;
   height: calc(100dvh - 20px);
+}
+
+.chat-session-sidebar__workspace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #e6e8eb;
+  box-sizing: border-box;
+}
+
+.chat-session-sidebar__workspace-name {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #1e1f1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-session-sidebar__workspace-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: #1e1f1f;
+  flex-shrink: 0;
+}
+
+.chat-session-sidebar__workspace-caret svg {
+  width: 16px;
+  height: 16px;
 }
 
 .chat-standalone__shell > .chat-session-sidebar {
@@ -163,8 +200,9 @@
 }
 
 .chat-session-sidebar__section-title {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 22px;
   color: #1e1f1f;
   overflow: hidden;
@@ -181,7 +219,6 @@
 .chat-session-sidebar__new-wrap {
   display: flex;
   width: 100%;
-  padding: 8px;
   box-sizing: border-box;
 }
 
@@ -190,17 +227,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   width: 100%;
-  height: 28px;
-  min-height: 28px;
-  padding: 8px;
+  height: 32px;
+  min-height: 32px;
+  padding: 4px 8px;
   border: 1px solid #0080ff;
   border-radius: 4px;
   background: #fff;
   color: #0080ff;
   box-sizing: border-box;
   box-shadow: none;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
 }
 
 .chat-session-sidebar__new:hover {
@@ -225,6 +266,11 @@
   height: 16px;
 }
 
+.chat-session-sidebar__new-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
 .chat-session-sidebar__new-label {
   font-size: 14px;
   font-weight: 400;
@@ -234,7 +280,8 @@
 .chat-session-sidebar__section-title {
   display: flex;
   align-items: center;
-  min-height: 28px;
+  justify-content: space-between;
+  height: 32px;
   padding: 0 8px;
 }
 
@@ -242,12 +289,11 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 8px;
 }
 
 .chat-session-sidebar__search-icon {
   position: absolute;
-  left: 16px;
+  left: 12px;
   display: inline-flex;
   width: 16px;
   height: 16px;
@@ -257,8 +303,8 @@
 
 .chat-session-sidebar__search-input {
   width: 100%;
-  height: 28px;
-  padding: 0 8px 0 32px;
+  height: 32px;
+  padding: 0 12px 0 32px;
   border: 1px solid #e6e8eb;
   border-radius: 4px;
   background: #fff;
@@ -266,6 +312,7 @@
   font-size: 14px;
   line-height: 22px;
   outline: none;
+  box-sizing: border-box;
 }
 
 .chat-session-sidebar__search-input::placeholder {
@@ -280,10 +327,10 @@
 .chat-session-sidebar__list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   min-height: 0;
   overflow: auto;
-  padding: 0 8px 4px;
+  padding: 0;
 }
 
 .chat-session-sidebar__empty {
@@ -296,17 +343,27 @@
   text-align: center;
 }
 
+.chat-session-sidebar__item-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
 .chat-session-sidebar__item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+  height: 32px;
   min-width: 0;
-  padding: 4px 8px;
+  padding: 0 8px;
   border: none;
   border-radius: 4px;
-  background: #fff;
+  background: transparent;
   color: #1e1f1f;
   text-align: left;
+  box-sizing: border-box;
   transition:
     background 0.18s ease,
     color 0.18s ease;
@@ -320,31 +377,65 @@
   background: #d6ebff;
 }
 
-.chat-session-sidebar__item-main {
+.chat-session-sidebar__item-delete {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
-  gap: 0;
-  min-width: 0;
-  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #8e9091;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    color 0.18s ease,
+    background 0.18s ease;
+  z-index: 1;
 }
 
-.chat-session-sidebar__item-title,
-.chat-session-sidebar__item-subtitle {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.chat-session-sidebar__item-wrap:hover .chat-session-sidebar__item-delete {
+  opacity: 1;
+}
+
+.chat-session-sidebar__item-delete:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+.chat-session-sidebar__item-delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+.chat-session-sidebar__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 4px;
+  background: linear-gradient(-45deg, #0080ff 0%, #c955ff 100%);
 }
 
 .chat-session-sidebar__item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-}
-
-.chat-session-sidebar__item-subtitle {
-  font-size: 12px;
-  line-height: 20px;
-  color: #8e9091;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .chat-session-sidebar__item--active .chat-session-sidebar__item-title {
@@ -428,189 +519,258 @@
   object-fit: contain;
 }
 
-.chat--standalone .chat-standalone-empty__jobs {
+/* 定时任务面板 - Figma 设计 */
+.chat--standalone .cron-task-panel {
   width: 100%;
   display: grid;
-  gap: 12px;
-}
-
-.chat--standalone .chat-standalone-empty__jobs-title {
-  justify-self: center;
-  width: 100%;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 22px;
-  color: #1e1f1f;
-  text-align: center;
-}
-
-.chat--standalone .chat-standalone-empty__jobs-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+}
+
+.chat--standalone .cron-task-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.chat--standalone .cron-task-panel__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.chat--standalone .cron-task-panel__header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #0080ff;
+  flex-shrink: 0;
+}
+
+.chat--standalone .cron-task-panel__header-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.chat--standalone .cron-task-panel__header-label {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #1e1f1f;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.chat--standalone .cron-task-panel__header-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: rgba(0, 128, 255, 0.08);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  color: #0080ff;
+  white-space: nowrap;
+}
+
+.chat--standalone .cron-task-panel__header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #8e9091;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.chat--standalone .cron-task-panel__header-more {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #8e9091;
+  white-space: nowrap;
+}
+
+.chat--standalone .cron-task-panel__header-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+}
+
+.chat--standalone .cron-task-panel__header-arrow svg {
+  width: 12px;
+  height: 12px;
+}
+
+.chat--standalone .cron-task-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
   width: 100%;
   align-items: start;
 }
 
-.chat--standalone .chat-standalone-empty__job-card {
-  display: grid;
-  gap: 10px;
+.chat--standalone .cron-task-panel__empty {
+  padding: 24px 12px;
+  border: 1px dashed #e6e8eb;
+  border-radius: 8px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  line-height: 20px;
+  color: #8e9091;
+  text-align: center;
+}
+
+.chat--standalone .cron-task-card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid #e6e8eb;
+  border-radius: 8px;
   background: #fff;
   box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
+  overflow: hidden;
 }
 
-.chat--standalone .chat-standalone-empty__job-main {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-}
-
-.chat--standalone .chat-standalone-empty__job-title {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  overflow-wrap: anywhere;
-}
-
-.chat--standalone .chat-standalone-empty__job-schedule {
-  color: var(--muted);
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.chat--standalone .chat-standalone-empty__job-detail {
-  display: grid;
-  gap: 3px;
-  margin-top: 2px;
-}
-
-.chat--standalone .chat-standalone-empty__job-detail-label {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.chat--standalone .chat-standalone-empty__job-detail-value {
-  font-size: 13px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.chat--standalone .chat-standalone-empty__job-agent {
-  color: var(--muted);
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-
-.chat--standalone .chat-standalone-empty__job-meta {
-  min-width: 0;
-}
-
-.chat--standalone .chat-standalone-empty__job-state {
-  display: grid;
-  gap: 4px;
-}
-
-.chat--standalone .chat-standalone-empty__job-state-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.chat--standalone .chat-standalone-empty__job-state-key {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.chat--standalone .chat-standalone-empty__job-state-value {
-  color: var(--text);
-  font-size: 12px;
-  white-space: nowrap;
+.chat--standalone .cron-task-card__title {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #1e1f1f;
+  padding: 0 12px;
+  border-bottom: 1px solid #e6e8eb;
+  background: #f5f7fa;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat--standalone .cron-task-card__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.chat--standalone .cron-task-card__item {
+  padding: 8px 12px;
+}
+
+.chat--standalone .cron-task-card__item + .cron-task-card__item {
+  border-top: 1px solid #f0f1f3;
+}
+
+.chat--standalone .cron-task-card__item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 17px;
+}
+
+.chat--standalone .cron-task-card__item-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.chat--standalone .cron-task-card__item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #0080ff;
+}
+
+.chat--standalone .cron-task-card__item-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.chat--standalone .cron-task-card__item-text {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 14px;
+  color: #1e1f1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   min-width: 0;
 }
 
-.chat--standalone .chat-standalone-empty__job-status {
-  font-size: 11px;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 2px 8px;
-  text-transform: lowercase;
-}
-
-.chat--standalone .chat-standalone-empty__job-status--ok {
-  color: var(--ok);
-  border-color: rgba(34, 197, 94, 0.35);
-  background: var(--ok-subtle);
-}
-
-.chat--standalone .chat-standalone-empty__job-status--error {
-  color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.35);
-  background: var(--danger-subtle);
-}
-
-.chat--standalone .chat-standalone-empty__job-status--skipped {
-  color: var(--muted);
-  border-color: rgba(107, 114, 128, 0.35);
-  background: rgba(107, 114, 128, 0.08);
-}
-
-.chat--standalone .chat-standalone-empty__job-status--na {
-  color: var(--muted);
-  border-color: rgba(148, 163, 184, 0.35);
-  background: rgba(148, 163, 184, 0.08);
-}
-
-.chat--standalone .chat-standalone-empty__job-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
-.chat--standalone .chat-standalone-empty__job-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-
-.chat--standalone .chat-standalone-empty__job-chip {
+.chat--standalone .cron-task-card__item-status {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
-  background: #fff;
+  gap: 4px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  color: #8e9091;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.chat--standalone .chat-standalone-empty__job-chip--ok {
-  color: var(--ok);
-  border-color: rgba(34, 197, 94, 0.35);
-  background: var(--ok-subtle);
+.chat--standalone .cron-task-card__item-status svg {
+  width: 16px;
+  height: 16px;
 }
 
-.chat--standalone .chat-standalone-empty__job-chip--danger {
-  color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.35);
-  background: var(--danger-subtle);
+.chat--standalone .cron-task-card__item-status--ok {
+  color: #00b42a;
+}
+
+.chat--standalone .cron-task-card__item-status--error {
+  color: #ef4444;
+}
+
+.chat--standalone .cron-task-card__item-status--na {
+  color: #8e9091;
+}
+
+.chat--standalone .cron-task-card__item-time {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.chat--standalone .cron-task-card__item-time-label {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #8e9091;
+  white-space: nowrap;
+}
+
+.chat--standalone .cron-task-card__item-time-value {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  color: #1e1f1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .chat--standalone .chat-group.tool .chat-group-messages {
@@ -1004,6 +1164,7 @@
 
 .chat--standalone .agent-chat__toolbar-left,
 .chat--standalone .agent-chat__toolbar-right {
+  position: relative;
   gap: 4px;
   min-width: 0;
 }
@@ -1032,75 +1193,140 @@
   text-decoration-skip-ink: none;
 }
 
-.chat--standalone .agent-chat__agent-select {
+.chat--standalone .agent-chat__model-chip {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-width: 210px;
+  gap: 4px;
   height: 28px;
-  padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-  border-radius: 8px;
-  background: var(--card);
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
   color: var(--text);
   box-sizing: border-box;
   box-shadow: none;
-  transition:
-    border-color var(--duration-fast) ease,
-    box-shadow var(--duration-fast) ease,
-    background-color var(--duration-fast) ease;
+  cursor: pointer;
+  transition: background 0.18s ease;
 }
 
-.chat--standalone .agent-chat__agent-select-label {
+.chat--standalone .agent-chat__model-chip:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.chat--standalone .agent-chat__model-chip-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(-45deg, #0080ff 0%, #c955ff 100%);
   flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
 
-.chat--standalone .agent-chat__agent-select select {
+.chat--standalone .agent-chat__model-chip-name {
+  font-size: 12px;
+  line-height: 22px;
+  font-family: 'PingFang SC', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.chat--standalone .agent-chat__model-chip-arrow {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: #8e9091;
+}
+
+.chat--standalone .agent-chat__model-chip-arrow svg {
+  width: 12px;
+  height: 12px;
+}
+
+.chat--standalone .agent-chat__model-chip select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  flex: 1 1 auto;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  line-height: 1.5;
-  outline: none;
-  padding: 0;
-  cursor: pointer;
 }
 
-.chat--standalone .agent-chat__agent-select select:disabled {
+.chat--standalone .agent-chat__model-chip select:disabled {
   cursor: not-allowed;
 }
 
-.chat--standalone .agent-chat__agent-select:hover {
-  background: color-mix(in srgb, var(--card) 88%, var(--bg-hover));
-  border-color: color-mix(in srgb, var(--border) 50%, var(--accent));
-}
-
-.chat--standalone .agent-chat__agent-select:focus-within {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent);
-}
-
-.chat--standalone .agent-chat__agent-select-icon {
+.chat--standalone .agent-chat__toolbar-divider {
   display: inline-flex;
+  align-items: center;
+  width: 1px;
+  height: 14.5px;
   flex-shrink: 0;
-  color: var(--muted);
-  pointer-events: none;
+  color: rgba(0, 0, 0, 0.12);
 }
 
-.chat--standalone .agent-chat__agent-select-icon svg {
-  width: 14px;
-  height: 14px;
+.chat--standalone .agent-chat__toolbar-divider svg {
+  display: none;
+}
+
+.chat--standalone .agent-chat__toolbar-divider::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 14.5px;
+  background: currentColor;
+}
+
+.chat--standalone .agent-chat__toolbar-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.18s ease;
+}
+
+.chat--standalone .agent-chat__toolbar-chip:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.chat--standalone .agent-chat__toolbar-chip:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.chat--standalone .agent-chat__toolbar-chip svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.chat--standalone .agent-chat__toolbar-chip-label {
+  font-size: 12px;
+  line-height: 22px;
+  font-family: 'PingFang SC', sans-serif;
+  white-space: nowrap;
+}
+
+.chat--standalone .agent-chat__toolbar-chip .agent-chat__model-chip-arrow,
+.chat--standalone .agent-chat__toolbar-chip .agent-chat__model-chip-arrow svg,
+.chat--standalone .agent-chat__toolbar-chip > :last-child {
+  display: inline-flex;
+  color: #8e9091;
+  flex-shrink: 0;
+}
+
+.chat--standalone .agent-chat__toolbar-chip > :last-child svg {
+  width: 12px;
+  height: 12px;
 }
 
 .chat--standalone .agent-chat__input-btn,
@@ -1112,7 +1338,7 @@
 }
 
 .chat--standalone .chat-send-btn {
-  width: 28px;
+  width: 48px;
   height: 28px;
   border-radius: 4px;
   background: var(--accent);
@@ -1137,6 +1363,93 @@
 
 .chat--standalone .chat-send-btn--stop:hover:not(:disabled) {
   background: color-mix(in srgb, var(--danger) 85%, #fff);
+}
+
+.chat--standalone .agent-chat__skills-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.chat--standalone .agent-chat__skills-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  width: 280px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e6e8eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 201;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-search {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-bottom: 1px solid #e6e8eb;
+  background: #f9fafb;
+  color: #1e1f1f;
+  font-size: 13px;
+  line-height: 20px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-search::placeholder {
+  color: #8e9091;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-list {
+  overflow-y: auto;
+  max-height: 280px;
+  padding: 4px;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-item:hover {
+  background: rgba(0, 128, 255, 0.06);
+}
+
+.chat--standalone .agent-chat__skills-dropdown-emoji {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-name {
+  font-size: 13px;
+  line-height: 20px;
+  color: #1e1f1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat--standalone .agent-chat__skills-dropdown-empty {
+  padding: 16px 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #8e9091;
+  text-align: center;
+}
+
+.chat--standalone .agent-chat__toolbar-chip.active {
+  background: rgba(0, 128, 255, 0.08);
 }
 
 @media (max-width: 1100px) {
@@ -1200,4 +1513,887 @@
     width: 28px;
     height: 28px;
   }
+}
+
+/* Cron management page */
+.cron-page {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  background: #f5f7fa;
+}
+
+.cron-page__sidebar {
+  width: 56px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border-right: 1px solid #e8e8e8;
+  overflow: hidden;
+}
+
+.cron-page__sidebar-main {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px 0;
+  gap: 0;
+}
+
+.cron-page__sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  color: #8e9091;
+  position: relative;
+}
+
+.cron-page__sidebar-item:hover {
+  background: #f0f1f3;
+  color: #1e1f1f;
+}
+
+.cron-page__sidebar-item--active {
+  background: rgba(0, 128, 255, 0.08);
+  color: #0080ff;
+}
+
+.cron-page__sidebar-item--active::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #0080ff;
+}
+
+.cron-page__sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.cron-page__sidebar-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cron-page__sidebar-label {
+  font-size: 10px;
+  line-height: 14px;
+  margin-top: 2px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 44px;
+}
+
+.cron-page__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cron-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 40px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.cron-page__header-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+  color: #1e1f1f;
+  white-space: nowrap;
+}
+
+.cron-page__header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cron-page__filter-select {
+  width: 200px;
+  height: 28px;
+  padding: 0 28px 0 8px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1e1f1f;
+  background: #fff;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e9091' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.cron-page__filter-select:focus {
+  outline: none;
+  border-color: #0080ff;
+}
+
+.cron-page__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+}
+
+.cron-page__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Cron create form */
+.cron-create {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.cron-create__dialog {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px 2px 24px 24px;
+  box-shadow: 0 4px 24px rgba(0, 25, 50, 0.12);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.cron-create__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 24px;
+}
+
+.cron-create__header-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #1e1f1f;
+}
+
+.cron-create__header-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #8e9091;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cron-create__header-close:hover {
+  background: #f0f1f3;
+  color: #1e1f1f;
+}
+
+.cron-create__header-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-create__scroll {
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+}
+
+.cron-create__form {
+  width: 672px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.cron-create__section {
+  margin-bottom: 20px;
+}
+
+.cron-create__section:last-child {
+  margin-bottom: 0;
+}
+
+.cron-create__section-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+  color: #1e1f1f;
+  margin: 0 0 12px;
+}
+
+.cron-create__section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cron-create__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cron-create__label {
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+}
+
+.cron-create__required {
+  color: #f53f3f;
+  margin-left: 2px;
+}
+
+.cron-create__input,
+.cron-create__select {
+  height: 32px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+  background: #fff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.cron-create__input:focus,
+.cron-create__select:focus {
+  border-color: #0080ff;
+}
+
+.cron-create__input::placeholder {
+  color: #8e9091;
+}
+
+.cron-create__select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cron-create__select-wrap--inline {
+  display: inline-flex;
+}
+
+.cron-create__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  cursor: pointer;
+}
+
+.cron-create__select--sm {
+  width: 100px;
+}
+
+.cron-create__select-arrow {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: #8e9091;
+}
+
+.cron-create__select-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-create__textarea-wrap {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.cron-create__textarea-wrap:focus-within {
+  border-color: #0080ff;
+}
+
+.cron-create__textarea {
+  height: 115px;
+  padding: 4px 12px;
+  border: none;
+  resize: none;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.cron-create__textarea::placeholder {
+  color: #8e9091;
+}
+
+.cron-create__model-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-top: 1px solid #f0f1f3;
+  background: #fafafa;
+}
+
+.cron-create__model-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-create__model-name {
+  font-size: 12px;
+  line-height: 20px;
+  color: #1e1f1f;
+  flex: 1;
+}
+
+.cron-create__model-select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.cron-create__radio-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cron-create__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+}
+
+.cron-create__radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #0080ff;
+}
+
+.cron-create__divider {
+  display: inline-block;
+  width: 8px;
+  height: 1px;
+  background: #8e9091;
+}
+
+.cron-create__time-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cron-create__time-unit {
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+}
+
+.cron-create__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 672px;
+  padding: 16px 24px 0 0;
+  box-sizing: border-box;
+}
+
+.cron-create__footer-left,
+.cron-create__footer-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cron-create__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 76px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: #fff;
+  color: #1e1f1f;
+  font-size: 14px;
+  line-height: 22px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.cron-create__btn:hover {
+  background: #f5f7fa;
+}
+
+.cron-create__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-create__btn--primary {
+  background: #0080ff;
+  border-color: #0080ff;
+  color: #fff;
+}
+
+.cron-create__btn--primary:hover {
+  background: #0067cc;
+}
+
+.cron-create__btn--danger {
+  color: #f53f3f;
+}
+
+.cron-create__btn--danger:hover {
+  background: rgba(245, 63, 63, 0.06);
+}
+
+.cron-create__error {
+  display: block;
+  font-size: 12px;
+  line-height: 20px;
+  color: #f53f3f;
+  margin-top: -4px;
+}
+
+/* ========== 技能管理页面 ========== */
+
+.skills-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.skills-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+}
+
+.skills-header__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  padding: 0 4px;
+}
+
+.skills-header__tab-text {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+
+.skills-header__tab--active .skills-header__tab-text {
+  font-weight: 600;
+}
+
+.skills-header__tab--active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #0080ff;
+  border-radius: 1px;
+}
+
+.skills-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skills-header__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 196px;
+}
+
+.skills-header__search-icon {
+  position: absolute;
+  left: 8px;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  color: #8e9091;
+  pointer-events: none;
+}
+
+.skills-header__search-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skills-header__search input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px 0 28px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: #fff;
+  color: #1e1f1f;
+  font-size: 14px;
+  line-height: 22px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.skills-header__search input::placeholder {
+  color: #8e9091;
+}
+
+.skills-header__search input:focus {
+  border-color: #0080ff;
+}
+
+.skills-header__add-wrap {
+  position: relative;
+}
+
+.skills-header__add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: #0080ff;
+  color: #fff;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  box-sizing: border-box;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.skills-header__add-btn:hover {
+  background: #0067cc;
+}
+
+.skills-header__add-icon,
+.skills-header__add-arrow {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.skills-header__add-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skills-header__add-arrow svg {
+  width: 12px;
+  height: 12px;
+}
+
+.skills-header__add-text {
+  white-space: nowrap;
+}
+
+.skills-header__add-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.skills-header__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0, 25, 50, 0.12);
+  padding: 8px;
+  z-index: 201;
+}
+
+.skills-header__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #1e1f1f;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.skills-header__dropdown-item:hover {
+  background: #f0f1f3;
+}
+
+.skills-header__dropdown-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  color: #1e1f1f;
+}
+
+.skills-header__dropdown-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ========== 技能卡片网格 ========== */
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(329px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 24px rgba(0, 25, 50, 0.12);
+  cursor: default;
+}
+
+.skill-card--disabled .skill-card__name {
+  color: #8e9091;
+}
+
+.skill-card--disabled .skill-card__icon {
+  background: #c5c7c9 !important;
+}
+
+.skill-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.skill-card__icon-char {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  color: #fff;
+}
+
+.skill-card__icon--image {
+  background: #fff;
+  border: 1px solid #e6e8eb;
+  overflow: hidden;
+}
+
+.skill-card__icon--image img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.skill-card__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+  color: #1e1f1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-card__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0;
+  border-radius: 2px;
+}
+
+.skill-card__status-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  color: #0080ff;
+}
+
+.skill-card__status-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skill-card__status-icon--spin svg {
+  animation: skill-card-spin 1s linear infinite;
+}
+
+@keyframes skill-card-spin {
+  to { transform: rotate(360deg); }
+}
+
+.skill-card__status-text {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  line-height: 20px;
+  color: #0080ff;
+  white-space: nowrap;
+}
+
+.skill-card__divider {
+  width: 1px;
+  height: 12px;
+  background: #e6e8eb;
+  flex-shrink: 0;
+}
+
+.skill-card__toggle {
+  position: relative;
+  width: 32px;
+  height: 16px;
+  border-radius: 8px;
+  background: #e6e8eb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.skill-card__toggle--on {
+  background: #0080ff;
+}
+
+.skill-card__toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s ease;
+}
+
+.skill-card__toggle--on .skill-card__toggle-thumb {
+  left: 18px;
+}
+
+.skill-card__desc {
+  padding-left: 32px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  line-height: 20px;
+  color: #8e9091;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.skill-card__tags {
+  display: flex;
+  gap: 8px;
+  padding-left: 32px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 4px;
+  background: #f2f3f8;
+  border-radius: 2px;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  line-height: 20px;
+  color: #7f8bb7;
+  white-space: nowrap;
 }

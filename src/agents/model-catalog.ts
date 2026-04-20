@@ -148,6 +148,18 @@ export async function loadModelCatalog(params?: {
         const input = Array.isArray(entry?.input) ? entry.input : undefined;
         models.push({ id, name, provider, contextWindow, reasoning, input });
       }
+      logStage("pi-entries-merged", `entries=${models.length}`);
+    } catch (error) {
+      if (!hasLoggedModelCatalogError) {
+        hasLoggedModelCatalogError = true;
+        log.warn(`Failed to load Pi model catalog: ${String(error)}`);
+      }
+    }
+
+    // 插件 augmentModelCatalog 始终执行，不依赖 Pi SDK 是否成功
+    try {
+      const cfg = params?.config ?? loadConfig();
+      const agentDir = resolveOpenClawAgentDir();
       const supplemental = await augmentModelCatalogWithProviderPlugins({
         config: cfg,
         env: process.env,

@@ -9,6 +9,7 @@ import type {
 } from "../../config/config.js";
 import {
   CONFIG_PATH,
+  clearConfigCache,
   loadConfig,
   readConfigFileSnapshot,
   resolveStateDir,
@@ -299,7 +300,7 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
   }
 
   gatewayLog.info("loading configuration…");
-  const cfg = loadConfig();
+  let cfg = loadConfig();
   maybeLogPendingControlUiBuild(cfg);
   const portOverride = parsePort(opts.port);
   if (opts.port !== undefined && portOverride === null) {
@@ -423,8 +424,34 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
 
   gatewayLog.info("resolving authentication…");
   const snapshot = await readConfigFileSnapshot().catch(() => null);
-  const configExists = snapshot?.exists ?? fs.existsSync(CONFIG_PATH);
+  let configExists = snapshot?.exists ?? fs.existsSync(CONFIG_PATH);
   const configAuditPath = path.join(resolveStateDir(process.env), "logs", "config-audit.jsonl");
+
+  // --force 且无配置文件时，自动创建 local 模式默认配置
+  if (!configExists && opts.force) {
+    const configDir = path.dirname(CONFIG_PATH);
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    const defaultConfig = {
+      gateway: {
+        mode: "local",
+        auth: { mode: "token" },
+        bind: "loopback",
+      },
+      agents: {
+        defaults: {
+          model: { primary: "gildata/qwen-plus-latest" },
+        },
+      },
+    };
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2), "utf8");
+    gatewayLog.info("auto-created default config (local mode)");
+    clearConfigCache();
+    cfg = loadConfig();
+    configExists = true;
+  }
+
   const effectiveCfg = snapshot?.valid ? snapshot.config : cfg;
   const mode = effectiveCfg.gateway?.mode;
   const guardErrors = getGatewayStartGuardErrors({

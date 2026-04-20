@@ -107,6 +107,7 @@ type GatewayHost = {
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
   updateAvailable: UpdateAvailable | null;
+  setTab: (tab: Tab) => void;
 };
 
 type SessionDefaultsSnapshot = {
@@ -348,6 +349,8 @@ export function connectGateway(
                   code: error.code,
                 } as Parameters<typeof formatConnectError>[0])
               : error.message;
+          // 首次运行检测：连接失败时尝试检查 setup 状态
+          void checkSetupRedirect(host);
           return;
         }
         host.lastError =
@@ -633,6 +636,26 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
       | GatewayUpdateAvailableEventPayload
       | undefined;
     host.updateAvailable = payload?.updateAvailable ?? null;
+  }
+}
+
+/**
+ * 首次运行检测：连接失败时尝试检查 setup 状态，
+ * 如果 setup 未完成则跳转到 setup 向导。
+ */
+async function checkSetupRedirect(host: GatewayHost) {
+  try {
+    const base = host.settings.gatewayUrl.replace(/\/+$/, "");
+    const res = await fetch(`${base}/api/setup/status`);
+    if (!res.ok) {
+      return;
+    }
+    const data = await res.json();
+    if (data.ok && data.state && !data.state.completed) {
+      host.setTab("setup");
+    }
+  } catch {
+    // Gateway 完全不可达，保持 login gate
   }
 }
 

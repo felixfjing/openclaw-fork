@@ -1932,6 +1932,341 @@
   }
 }
 
+/* Cron Card Grid */
+.cron-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 8px;
+  margin-top: 0;
+}
+
+.cron-card {
+  border: 1px solid #e6e8eb;
+  border-radius: 4px;
+  background: var(--card);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.cron-card:hover {
+  border-color: #2a79ee;
+  box-shadow: 0 2px 8px rgba(42, 121, 238, 0.1);
+}
+
+.cron-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.cron-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.cron-card__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2a79ee;
+}
+
+.cron-card__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cron-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+  color: #1e1f1f;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cron-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  height: 24px;
+  border: 1px solid #add6ff;
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.cron-card__badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-card__badge--active {
+  color: #0080ff;
+}
+
+.cron-card__badge--paused {
+  color: #8e9091;
+  border-color: #e6e8eb;
+}
+
+.cron-card__desc {
+  font-size: 12px;
+  line-height: 20px;
+  color: #8e9091;
+  overflow: hidden;
+  min-width: 0;
+  padding-left: 32px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cron-card__divider {
+  display: flex;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.cron-card__divider-line {
+  flex: 1;
+  height: 1px;
+  background: #e6e8eb;
+}
+
+.cron-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #8e9091;
+  box-sizing: border-box;
+}
+
+.cron-card__schedule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cron-card__alarm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #8e9091;
+}
+
+.cron-card__alarm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-card__last-run {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Cron Toolbar */
+.cron-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.cron-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cron-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cron-segmented {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.cron-segmented__item {
+  padding: 6px 16px;
+  font-size: 13px;
+  line-height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+  white-space: nowrap;
+}
+
+.cron-segmented__item:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.cron-segmented__item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.cron-segmented__item--active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+
+.cron-segmented__item--active:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cron-toolbar__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  transition: border-color var(--duration-fast) ease;
+  box-sizing: border-box;
+}
+
+.cron-toolbar__search:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.cron-toolbar__search-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.cron-toolbar__search-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-toolbar__search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--text);
+  width: 160px;
+  padding: 0;
+  line-height: 20px;
+}
+
+.cron-toolbar__search input::placeholder {
+  color: var(--muted);
+}
+
+.cron-toolbar__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 16px;
+  height: 34px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--duration-fast) ease,
+    opacity var(--duration-fast) ease;
+  box-sizing: border-box;
+}
+
+.cron-toolbar__add-btn:hover {
+  opacity: 0.9;
+}
+
+.cron-toolbar__refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+  box-sizing: border-box;
+}
+
+.cron-toolbar__refresh-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.cron-toolbar__refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cron-toolbar__refresh-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cron-toolbar__error {
+  font-size: 12px;
+  color: var(--danger);
+  white-space: nowrap;
+}
+
 /* ===========================================
    Chips - Compact and punchy
    =========================================== */

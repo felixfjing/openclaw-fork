@@ -1,0 +1,16 @@
+uid=9_0 RootWebArea "OpenClaw Control" url="http://localhost:18789/chat/standalone?session=agent%3Amain%3Adashboard%3A179e7f58-2c9a-4f38-9838-3b02d083abc6#cron"
+  uid=9_1 main
+    uid=10_0 navigation
+      uid=10_1 StaticText "综合助手"
+      uid=10_2 StaticText "定时任务"
+      uid=10_3 StaticText "技能广场"
+      uid=10_4 StaticText "专家Agent"
+      uid=10_5 StaticText "文档中心"
+    uid=10_6 StaticText "综合助手"
+    uid=10_7 StaticText "定时任务"
+    uid=10_8 button "全部"
+    uid=10_9 button "已启用"
+    uid=10_10 button "已禁用" focusable focused
+    uid=10_11 searchbox
+    uid=10_12 button "新增"
+    uid=10_13 StaticText "没有匹配的任务"

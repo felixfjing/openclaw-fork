@@ -122,6 +122,35 @@ export const icons = {
     </svg>
   `,
   check: html` <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg> `,
+  clock: html`
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  `,
+  alarm: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="13" r="8" />
+      <path d="M5 3 2 6" />
+      <path d="M22 6 19 3" />
+      <path d="M6.38 18.7 4 21" />
+      <path d="M17.64 18.67 20 21" />
+      <path d="M12 9v4l2 2" />
+    </svg>
+  `,
+  play: html`
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="10 8 16 12 10 16" fill="#fff" />
+    </svg>
+  `,
+  pause: html`
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="12" r="10" />
+      <rect x="9" y="8" width="2" height="8" rx="0.5" fill="#fff" />
+      <rect x="13" y="8" width="2" height="8" rx="0.5" fill="#fff" />
+    </svg>
+  `,
   arrowDown: html`
     <svg viewBox="0 0 24 24">
       <path d="M12 5v14" />
@@ -284,6 +313,28 @@ export const icons = {
     <svg viewBox="0 0 24 24">
       <path d="m22 2-7 20-4-9-9-4Z" />
       <path d="M22 2 11 13" />
+    </svg>
+  `,
+  caretDownFill: html`
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 10l5 5 5-5z" />
+    </svg>
+  `,
+  wrench: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `,
+  graduationCap: html`
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M22 10L12 5 2 10l10 5 10-5z" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M22 10v6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `,
+  dividerV: html`
+    <svg viewBox="0 0 2 24" fill="none">
+      <line x1="1" y1="5" x2="1" y2="19" stroke="currentColor" stroke-width="1" opacity="0.2" />
     </svg>
   `,
   stop: html` <svg viewBox="0 0 24 24"><rect width="14" height="14" x="5" y="5" rx="1" /></svg> `,

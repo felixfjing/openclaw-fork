@@ -6,26 +6,46 @@ import {
   type ProviderRuntimeModel,
 } from "openclaw/plugin-sdk/plugin-entry";
 import { CUSTOM_LOCAL_AUTH_MARKER } from "openclaw/plugin-sdk/provider-auth";
+import { GILDATA_MODEL_ALIASES } from "./dynamic-models.js";
 
 const PROVIDER_ID = "gildata";
 
 // 缓存动态模型（按baseUrl）
 const cachedDynamicModels = new Map<string, ProviderRuntimeModel[]>();
 
+/**
+ * 返回 gildata catalog 条目。
+ * 优先使用配置中的 models.providers.gildata.models，
+ * 回退到 GILDATA_MODEL_ALIASES 硬编码列表。
+ */
 function resolveGildataAugmentedCatalogEntries(config: OpenClawConfig | undefined) {
-  if (!config) {
-    return [];
+  const entries: Array<{ id: string; name: string; provider: string }> = [];
+  const seen = new Set<string>();
+
+  const addEntry = (id: string, name: string) => {
+    const key = id.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      entries.push({ id, name, provider: PROVIDER_ID });
+    }
+  };
+
+  // 优先读取配置中的模型列表
+  const configuredModels = (config?.models?.providers?.gildata as any)?.models;
+  if (Array.isArray(configuredModels)) {
+    for (const model of configuredModels) {
+      if (model?.id) {
+        addEntry(model.id, model.name || model.id);
+      }
+    }
   }
-  // 从模型别名映射生成增强的catalog条目
-  return Object.entries(
-    (config.models?.providers?.gildata as any)?.modelAliases ?? {},
-  ).map(([alias, actualModel]) => ({
-    id: alias,
-    name: alias,
-    description: `别名映射到 ${actualModel}`,
-    isAlias: true,
-    actualModel,
-  }));
+
+  // 补充别名列表中未在配置中出现的模型
+  for (const [alias] of Object.entries(GILDATA_MODEL_ALIASES)) {
+    addEntry(alias, alias);
+  }
+
+  return entries;
 }
 
 /** Lazily loads setup helpers so provider wiring stays lightweight at startup. */
@@ -46,20 +66,6 @@ export default definePluginEntry({
       handler: async (req, res) => {
         const { handleLoginRoute } = await import("./login-route.js");
         return handleLoginRoute(req, res);
-      },
-      auth: "plugin",
-    });
-
-    // 注册综合助手聊天页面 GET 路由
-    api.registerHttpRoute({
-      path: "/plugins/gildata/warrenq-chat",
-      handler: async (req, res) => {
-        const { handleWarrenqChatRoute } = await import("./warrenq-chat-route.js");
-        const urlPath = req.url ?? "/";
-        const bp = urlPath.endsWith("/warrenq-chat")
-          ? urlPath.replace(/\/warrenq-chat$/, "")
-          : "";
-        return handleWarrenqChatRoute(req, res, bp);
       },
       auth: "plugin",
     });

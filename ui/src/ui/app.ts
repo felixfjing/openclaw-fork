@@ -79,6 +79,7 @@ import type { Tab } from "./navigation.ts";
 import type { SidebarContent } from "./sidebar-content.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
 import { VALID_THEME_NAMES, type ResolvedTheme, type ThemeMode, type ThemeName } from "./theme.ts";
+import type { SetupWizardState } from "./views/setup/setup-types.ts";
 import type {
   AgentsListResult,
   AgentsFilesListResult,
@@ -436,6 +437,18 @@ export class OpenClawApp extends LitElement {
   @state() cronBusy = false;
 
   @state() updateAvailable: import("./types.js").UpdateAvailable | null = null;
+
+  @state() setupWizardState: SetupWizardState = {
+    currentStep: "check",
+    uvInstalled: false,
+    skillsDeployed: false,
+    providerConfigured: false,
+    completed: false,
+    uvProgress: null,
+    skillsProgress: null,
+    providerError: null,
+    gatewayUrl: "",
+  };
 
   // Overview dashboard state
   @state() attentionItems: import("./types.js").AttentionItem[] = [];

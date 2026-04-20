@@ -2,6 +2,7 @@ import type { CompactionStatus, FallbackStatus } from "../../app-tool-stream.ts"
 import type { ChatSideResult } from "../../chat-claw/side-result.ts";
 import type { ChatModelSelectState } from "../../chat-model-select-state.ts";
 import type { EmbedSandboxMode } from "../../embed-sandbox.ts";
+import type { GatewayBrowserClient } from "../../gateway.ts";
 import type { SidebarContent } from "../../sidebar-content.ts";
 import type { SessionsListResult } from "../../types.ts";
 import type { CronJob } from "../../types.ts";
@@ -76,9 +77,11 @@ export type ChatProps = {
   onModelChange?: (modelId: string) => void;
   onNavigateToAgent?: () => void;
   onSessionSelect?: (sessionKey: string) => void;
+  onDeleteSession?: (sessionKey: string) => Promise<void>;
   onOpenSidebar?: (content: SidebarContent) => void;
   onCloseSidebar?: () => void;
   onSplitRatioChange?: (ratio: number) => void;
   onChatScroll?: (event: Event) => void;
   basePath?: string;
+  client?: GatewayBrowserClient | null;
 };

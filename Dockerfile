@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 # Opt-in extension dependencies at build time (space-separated directory names).
 # Example: docker build --build-arg OPENCLAW_EXTENSIONS="diagnostics-otel matrix" .
 #
@@ -59,9 +57,15 @@ ENV PATH="/root/.bun/bin:${PATH}"
 
 RUN corepack enable
 
+# 配置国内镜像源：解决 Docker 构建环境访问 npmjs.org 的 SSL 和网络不稳定问题
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+RUN npm config set registry https://registry.npmmirror.com
+
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+# 将 lockfile 中的内部 registry URL 替换为公共镜像，Docker 构建环境无法访问内部 Artifactory
+RUN sed -i 's|http://artifactory\.hundsun\.com/artifactory/api/npm/fire1-npm-virtual/|https://registry.npmmirror.com/|g' pnpm-lock.yaml
 COPY openclaw.mjs ./
 COPY ui/package.json ./ui/package.json
 COPY patches ./patches
@@ -69,8 +73,14 @@ COPY scripts/postinstall-bundled-plugins.mjs scripts/npm-runner.mjs scripts/wind
 
 COPY --from=ext-deps /out/ ./${OPENCLAW_BUNDLED_PLUGIN_DIR}/
 
+# Git SSH → HTTPS 重写：将所有 git+ssh/ssh URL 重写为 HTTPS
+# Docker 构建环境无 SSH 密钥，需要将所有 SSH 协议的 git URL 转为 HTTPS
+RUN git config --global url."https://github.com/".insteadOf "git@github.com:" && \
+    git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" && \
+    git config --global url."https://github.com/".insteadOf "git+ssh://git@github.com/" && \
+    mkdir -p ~/.ssh && ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+
 # Reduce OOM risk on low-memory hosts during dependency installation.
-# Docker builds on small VMs may otherwise fail with "Killed" (exit 137).
 RUN --mount=type=cache,id=openclaw-pnpm-store,target=/root/.local/share/pnpm/store,sharing=locked \
     NODE_OPTIONS=--max-old-space-size=2048 pnpm install --frozen-lockfile
 
@@ -100,6 +110,12 @@ ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:build
 RUN pnpm qa:lab:build
 
+# 生成 dist inventory：列出 dist/ 中所有文件路径，供 runtime-assets 阶段的 postinstall 脚本使用
+# build:docker 不包含此步骤（由 openclaw-prepack.ts 负责），但 Docker 构建需要它
+# 先清理 pnpm 在 dist/ 中留下的符号链接（node_modules/.bin），inventory 函数会拒绝符号链接
+RUN find dist -type l -delete && \
+    node --import tsx -e "import{writePackageDistInventory as w}from'./src/infra/package-dist-inventory.ts';await w(process.cwd())"
+
 # Prune dev dependencies and strip build-only metadata before copying
 # runtime assets into the final image.
 FROM build AS runtime-assets
@@ -110,7 +126,9 @@ ARG OPENCLAW_BUNDLED_PLUGIN_DIR
 # the root, `ui`, and opted-in plugin manifests into the install layer, so
 # prune must not rediscover unrelated workspaces from the later full source
 # copy.
-RUN printf 'packages:\n  - .\n  - ui\n' > /tmp/pnpm-workspace.runtime.yaml && \
+# COPY . . 在 build 阶段覆盖了 sed 修改的 lockfile，需要再次替换内部 registry URL
+RUN sed -i 's|http://artifactory\.hundsun\.com/artifactory/api/npm/fire1-npm-virtual/|https://registry.npmmirror.com/|g' pnpm-lock.yaml && \
+    printf 'packages:\n  - .\n  - ui\n' > /tmp/pnpm-workspace.runtime.yaml && \
     for ext in $OPENCLAW_EXTENSIONS; do \
       printf '  - %s/%s\n' "$OPENCLAW_BUNDLED_PLUGIN_DIR" "$ext" >> /tmp/pnpm-workspace.runtime.yaml; \
     done && \
@@ -155,6 +173,7 @@ WORKDIR /app
 # keeping the default runtime image behavior unchanged.
 RUN --mount=type=cache,id=openclaw-bookworm-apt-cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,id=openclaw-bookworm-apt-lists,target=/var/lib/apt,sharing=locked \
+    printf 'Types: deb\nURIs: http://mirrors.aliyun.com/debian\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: http://mirrors.aliyun.com/debian-security\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources && \
     apt-get update && \
     if [ "${OPENCLAW_DOCKER_APT_UPGRADE}" != "0" ]; then \
       DEBIAN_FRONTEND=noninteractive apt-get upgrade -y --no-install-recommends; \

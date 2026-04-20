@@ -15,6 +15,9 @@ import type { GatewaySessionRow } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import { resolveAgentAvatarUrl } from "./agents-utils.ts";
 import { renderEmptyState } from "./chat-standalone/empty-state.ts";
+import { renderCronPage } from "./chat-standalone/cron-page.ts";
+import { renderCronCreatePage, validateCronForm, type CronCreateErrors } from "./chat-standalone/cron-create.ts";
+import { renderSkillsPage } from "./chat-standalone/skills-page.ts";
 import {
   adjustTextareaHeight,
   createChatInputHandler,
@@ -46,10 +49,12 @@ import {
   getInputHistory,
   getPinnedMessages,
   hasEmptyStateCronLoadRequested,
-  resetChatViewState as resetChatViewStateImpl,
+  loadSkillsList,
   markEmptyStateCronLoadRequested,
+  resetChatViewState as resetChatViewStateImpl,
   cleanupChatModuleState as cleanupChatModuleStateImpl,
 } from "./chat-standalone/state.ts";
+import type { CronCreateForm } from "./chat-standalone/state.ts";
 import type { ChatProps } from "./chat-standalone/types.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../../styles/chat-standalone.css";
@@ -89,8 +94,10 @@ function renderModelSelect(props: ChatProps): TemplateResult | typeof nothing {
       : (selectedOption?.label ?? modelSelectState.currentOverride);
 
   return html`
-    <label class="agent-chat__agent-select" title=${selectedLabel}>
-      <span class="agent-chat__agent-select-label">Model</span>
+    <label class="agent-chat__model-chip" title=${selectedLabel}>
+      <span class="agent-chat__model-chip-icon"></span>
+      <span class="agent-chat__model-chip-name">${selectedLabel}</span>
+      <span class="agent-chat__model-chip-arrow">${icons.caretDownFill}</span>
       <select
         data-chat-model-select="true"
         aria-label="Select model"
@@ -114,6 +121,71 @@ function renderModelSelect(props: ChatProps): TemplateResult | typeof nothing {
         )}
       </select>
     </label>
+  `;
+}
+
+function renderSkillsDropdown(
+  props: ChatProps,
+  requestUpdate: () => void,
+): TemplateResult {
+  const query = chatViewState.skillsSearchQuery.toLowerCase();
+  const filtered = query
+    ? chatViewState.skillsList.filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          s.skillKey.toLowerCase().includes(query),
+      )
+    : chatViewState.skillsList;
+
+  return html`
+    <div class="agent-chat__skills-dropdown-backdrop" @click=${() => {
+      chatViewState.skillsDropdownOpen = false;
+      chatViewState.skillsSearchQuery = "";
+      requestUpdate();
+    }}></div>
+    <div class="agent-chat__skills-dropdown">
+      <input
+        class="agent-chat__skills-dropdown-search"
+        type="text"
+        placeholder="搜索技能..."
+        .value=${chatViewState.skillsSearchQuery}
+        @input=${(e: Event) => {
+          chatViewState.skillsSearchQuery = (e.target as HTMLInputElement).value;
+          requestUpdate();
+        }}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === "Escape") {
+            chatViewState.skillsDropdownOpen = false;
+            chatViewState.skillsSearchQuery = "";
+            requestUpdate();
+          }
+        }}
+      />
+      <div class="agent-chat__skills-dropdown-list">
+        ${filtered.length === 0
+          ? html`<div class="agent-chat__skills-dropdown-empty">暂无可用技能</div>`
+          : repeat(
+              filtered,
+              (s) => s.skillKey,
+              (s) => html`
+                <div
+                  class="agent-chat__skills-dropdown-item"
+                  title=${s.description}
+                  @click=${() => {
+                    props.onDraftChange(`/skill ${s.skillKey} ${props.draft}`);
+                    chatViewState.skillsDropdownOpen = false;
+                    chatViewState.skillsSearchQuery = "";
+                    requestUpdate();
+                  }}
+                >
+                  ${s.emoji ? html`<span class="agent-chat__skills-dropdown-emoji">${s.emoji}</span>` : nothing}
+                  <span class="agent-chat__skills-dropdown-name">${s.name}</span>
+                </div>
+              `,
+              )}
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -224,7 +296,221 @@ function renderChatThread(
   `;
 }
 
+const weekDayToCron: Record<string, string> = {
+  "周一": "1", "周二": "2", "周三": "3", "周四": "4",
+  "周五": "5", "周六": "6", "周日": "0",
+};
+
+function buildCronExpr(form: CronCreateForm): string {
+  const h = form.hour || "00";
+  const m = form.minute || "00";
+  switch (form.cycleType) {
+    case "daily": return `${m} ${h} * * *`;
+    case "tradingDay": return `${m} ${h} * * 1-5`;
+    case "weekly": return `${m} ${h} * * ${weekDayToCron[form.weekDay] ?? "*"}`;
+    case "monthly": return `${m} ${h} ${form.monthDay || "*"} * *`;
+    default: return `${m} ${h} * * *`;
+  }
+}
+
+let hashListenerRegistered = false;
+let hashChangeCallback: (() => void) | null = null;
+
+function isCronRoute(): boolean {
+  const hash = window.location.hash;
+  return hash === "#cron" || hash === "#cron/create" || hash.startsWith("#cron/edit/");
+}
+
+function isSkillsRoute(): boolean {
+  return window.location.hash === "#skills";
+}
+
+function isCronCreateRoute(): boolean {
+  return window.location.hash === "#cron/create";
+}
+
+function isCronEditRoute(): boolean {
+  return window.location.hash.startsWith("#cron/edit/");
+}
+
+function parseCronEditJobId(): string | null {
+  const match = window.location.hash.match(/^#cron\/edit\/(.+)$/);
+  return match ? match[1] : null;
+}
+
+function parseCronExprToForm(expr: string): Partial<CronCreateForm> {
+  const parts = expr.trim().split(/\s+/);
+  if (parts.length < 5) return {};
+  const minute = parts[0];
+  const hour = parts[1];
+  const dayOfMonth = parts[2];
+  const month = parts[3];
+  const dayOfWeek = parts[4];
+  const result: Partial<CronCreateForm> = { hour, minute };
+  if (dayOfMonth === "*" && dayOfWeek === "*") {
+    result.cycleType = "daily";
+  } else if (dayOfWeek === "1-5") {
+    result.cycleType = "tradingDay";
+  } else if (dayOfMonth === "*") {
+    result.cycleType = "weekly";
+    const weekMap: Record<string, string> = { "1": "周一", "2": "周二", "3": "周三", "4": "周四", "5": "周五", "6": "周六", "0": "周日", "7": "周日" };
+    result.weekDay = weekMap[dayOfWeek] ?? "";
+  } else {
+    result.cycleType = "monthly";
+    result.monthDay = dayOfMonth;
+  }
+  return result;
+}
+
 export function renderChatStandalone(props: ChatProps) {
+  const requestUpdate = props.onRequestUpdate ?? (() => {});
+
+  hashChangeCallback = requestUpdate;
+  if (!hashListenerRegistered) {
+    window.addEventListener("hashchange", () => hashChangeCallback?.());
+    hashListenerRegistered = true;
+  }
+
+  if (isSkillsRoute()) {
+    if (!chatViewState.skillsListLoaded && props.connected && props.client) {
+      void loadSkillsList(props.client).then(() => requestUpdate());
+    }
+    return html`
+      <div class="chat-standalone__shell" style="grid-template-columns: 1fr">
+        ${renderSkillsPage(props, requestUpdate)}
+      </div>
+    `;
+  }
+
+  if (isCronRoute()) {
+    const onFormChange = (field: keyof CronCreateForm, value: string) => {
+      chatViewState.cronCreateForm = { ...chatViewState.cronCreateForm, [field]: value };
+      chatViewState.cronCreateErrors = {};
+      requestUpdate();
+    };
+
+    if (isCronCreateRoute() || isCronEditRoute()) {
+      // 编辑模式：从 job 数据填充表单
+      if (isCronEditRoute()) {
+        const editJobId = parseCronEditJobId();
+        if (editJobId && editJobId !== chatViewState.cronEditJobId) {
+          const job = (props.cronJobs ?? []).find((j) => j.id === editJobId);
+          if (job) {
+            chatViewState.cronEditJobId = editJobId;
+            const scheduleForm = job.schedule.kind === "cron"
+              ? parseCronExprToForm(job.schedule.expr)
+              : { hour: "08", minute: "00", cycleType: "daily" as const };
+            const prompt = job.payload.kind === "agentTurn" ? job.payload.message : (job.payload.kind === "systemEvent" ? (job.payload.text ?? "") : "");
+            const model = job.payload.kind === "agentTurn" ? (job.payload.model ?? "") : "";
+            chatViewState.cronCreateForm = {
+              taskName: job.name,
+              workspace: "",
+              prompt,
+              model,
+              cycleType: scheduleForm.cycleType ?? "daily",
+              weekDay: scheduleForm.weekDay ?? "",
+              monthDay: scheduleForm.monthDay ?? "",
+              hour: scheduleForm.hour ?? "08",
+              minute: scheduleForm.minute ?? "00",
+            };
+            chatViewState.cronCreateErrors = null;
+          }
+        }
+      } else {
+        // 新建模式：重置编辑状态
+        chatViewState.cronEditJobId = null;
+      }
+
+      const isEdit = chatViewState.cronEditJobId !== null;
+
+      const onSave = async () => {
+        const errors = validateCronForm(chatViewState.cronCreateForm);
+        if (Object.keys(errors).length > 0) {
+          chatViewState.cronCreateErrors = errors;
+          requestUpdate();
+          return;
+        }
+        chatViewState.cronCreateErrors = {};
+        const form = chatViewState.cronCreateForm;
+        const cronExpr = buildCronExpr(form);
+        const hasPrompt = form.prompt.trim().length > 0;
+        const payload: Record<string, unknown> = hasPrompt
+          ? { kind: "agentTurn", message: form.prompt, ...(form.model ? { model: form.model } : {}) }
+          : { kind: "systemEvent", text: form.taskName };
+        const sessionTarget = hasPrompt ? "isolated" : "main";
+        try {
+          if (props.client) {
+            if (isEdit) {
+              await props.client.request("cron.update", {
+                id: chatViewState.cronEditJobId,
+                patch: {
+                  name: form.taskName,
+                  schedule: { kind: "cron", expr: cronExpr },
+                  sessionTarget,
+                  payload,
+                },
+              });
+            } else {
+              await props.client.request("cron.add", {
+                name: form.taskName,
+                enabled: true,
+                schedule: { kind: "cron", expr: cronExpr },
+                sessionTarget,
+                wakeMode: "next-heartbeat",
+                payload,
+              });
+            }
+          }
+          if (props.loadCron) {
+            await props.loadCron();
+          }
+        } catch (err) {
+          chatViewState.cronCreateErrors = {
+            taskName: `${isEdit ? "保存" : "创建"}失败: ${err instanceof Error ? err.message : "未知错误"}`,
+          };
+          requestUpdate();
+          return;
+        }
+        window.location.hash = "#cron";
+      };
+
+      return html`
+        <div class="chat-standalone__shell" style="grid-template-columns: 1fr">
+          ${renderCronPage(
+            props,
+            { cronFilter: chatViewState.cronFilter, cronSearch: chatViewState.cronSearch },
+            (filter) => { chatViewState.cronFilter = filter; requestUpdate(); },
+            (query) => { chatViewState.cronSearch = query; requestUpdate(); },
+          )}
+          ${renderCronCreatePage(
+            props,
+            chatViewState.cronCreateForm,
+            chatViewState.cronCreateErrors ?? {},
+            onFormChange,
+            onSave,
+          )}
+        </div>
+      `;
+    }
+    // cron 列表页：确保数据已加载
+    if (props.loadCron && !hasEmptyStateCronLoadRequested(props.sessionKey)) {
+      markEmptyStateCronLoadRequested(props.sessionKey);
+      props.loadCron()
+        .then(() => requestUpdate())
+        .catch(() => requestUpdate());
+    }
+    return html`
+      <div class="chat-standalone__shell" style="grid-template-columns: 1fr">
+        ${renderCronPage(
+          props,
+          { cronFilter: chatViewState.cronFilter, cronSearch: chatViewState.cronSearch },
+          (filter) => { chatViewState.cronFilter = filter; requestUpdate(); },
+          (query) => { chatViewState.cronSearch = query; requestUpdate(); },
+        )}
+      </div>
+    `;
+  }
+
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
   const canAbort = Boolean(props.canAbort && props.onAbort);
@@ -246,11 +532,14 @@ export function renderChatStandalone(props: ChatProps) {
   const inputHistory = getInputHistory(props.sessionKey);
   const tokens = tokenEstimate(props.draft);
 
+  if (!chatViewState.skillsListLoaded && props.connected && props.client) {
+    void loadSkillsList(props.client).then(() => requestUpdate());
+  }
+
   const placeholder = props.connected
     ? "可以拖拽上传图片、文档等附件，@快速引用文件，“/”快速引用技能"
     : "Connect to the gateway to start chatting...";
 
-  const requestUpdate = props.onRequestUpdate ?? (() => {});
   const getDraft = props.getDraft ?? (() => props.draft);
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
@@ -414,11 +703,37 @@ export function renderChatStandalone(props: ChatProps) {
             <div class="agent-chat__toolbar">
               <div class="agent-chat__toolbar-left">
                 ${renderModelSelect(props)}
-                ${tokens ? html`<span class="agent-chat__token-count">${tokens}</span>` : nothing}
+                <span class="agent-chat__toolbar-divider">${icons.dividerV}</span>
+                <button
+                  class="agent-chat__toolbar-chip ${chatViewState.skillsDropdownOpen ? 'active' : ''}"
+                  title="技能"
+                  aria-label="Skills"
+                  ?disabled=${!props.connected}
+                  @click=${() => {
+                    chatViewState.skillsDropdownOpen = !chatViewState.skillsDropdownOpen;
+                    chatViewState.skillsSearchQuery = "";
+                    requestUpdate();
+                  }}
+                >
+                  ${icons.wrench}
+                  <span class="agent-chat__toolbar-chip-label">技能</span>
+                  ${icons.caretDownFill}
+                </button>
+                ${chatViewState.skillsDropdownOpen ? renderSkillsDropdown(props, requestUpdate) : nothing}
+                <span class="agent-chat__toolbar-divider">${icons.dividerV}</span>
+                <button
+                  class="agent-chat__toolbar-chip"
+                  title="专家"
+                  aria-label="Expert"
+                  ?disabled=${!props.connected}
+                >
+                  ${icons.graduationCap}
+                  <span class="agent-chat__toolbar-chip-label">专家</span>
+                  ${icons.caretDownFill}
+                </button>
               </div>
 
               <div class="agent-chat__toolbar-right">
-                ${nothing /* search hidden for now */}
                 <button
                   class="agent-chat__input-btn"
                   @click=${() => {
@@ -430,69 +745,6 @@ export function renderChatStandalone(props: ChatProps) {
                 >
                   ${icons.paperclip}
                 </button>
-                <button
-                  class="btn btn--ghost"
-                  @click=${() => exportMarkdown(props)}
-                  title="Export"
-                  aria-label="Export chat"
-                  ?disabled=${props.messages.length === 0}
-                >
-                  ${icons.download}
-                </button>
-
-                ${isSttSupported()
-                  ? html`
-                      <button
-                        class="agent-chat__input-btn ${chatViewState.sttRecording
-                          ? "agent-chat__input-btn--recording"
-                          : ""}"
-                        @click=${() => {
-                          if (chatViewState.sttRecording) {
-                            stopStt();
-                            chatViewState.sttRecording = false;
-                            chatViewState.sttInterimText = "";
-                            requestUpdate();
-                          } else {
-                            const started = startStt({
-                              onTranscript: (text, isFinal) => {
-                                if (isFinal) {
-                                  const current = getDraft();
-                                  const sep = current && !current.endsWith(" ") ? " " : "";
-                                  props.onDraftChange(current + sep + text);
-                                  chatViewState.sttInterimText = "";
-                                } else {
-                                  chatViewState.sttInterimText = text;
-                                }
-                                requestUpdate();
-                              },
-                              onStart: () => {
-                                chatViewState.sttRecording = true;
-                                requestUpdate();
-                              },
-                              onEnd: () => {
-                                chatViewState.sttRecording = false;
-                                chatViewState.sttInterimText = "";
-                                requestUpdate();
-                              },
-                              onError: () => {
-                                chatViewState.sttRecording = false;
-                                chatViewState.sttInterimText = "";
-                                requestUpdate();
-                              },
-                            });
-                            if (started) {
-                              chatViewState.sttRecording = true;
-                              requestUpdate();
-                            }
-                          }
-                        }}
-                        title=${chatViewState.sttRecording ? "Stop recording" : "Voice input"}
-                        ?disabled=${!props.connected}
-                      >
-                        ${chatViewState.sttRecording ? icons.micOff : icons.mic}
-                      </button>
-                    `
-                  : nothing}
                 ${canAbort
                   ? html`
                       <button

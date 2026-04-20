@@ -5,7 +5,52 @@ import { getOrCreateSessionCacheValue } from "../../chat-claw/session-cache.ts";
 import type { SlashCommandDef } from "../../chat-claw/slash-commands.ts";
 import { stopStt } from "../../chat-claw/speech.ts";
 
+export interface SkillCardEntry {
+  name: string;
+  skillKey: string;
+  emoji?: string;
+  description: string;
+  enabled: boolean;
+  iconChar: string;
+  iconColor: string;
+  tags: string[];
+  status: "idle" | "updating" | "update_available";
+  avatarUrl?: string;
+}
+
+export interface CronCreateForm {
+  taskName: string;
+  workspace: string;
+  prompt: string;
+  model: string;
+  cycleType: "daily" | "tradingDay" | "weekly" | "monthly";
+  weekDay: string;
+  monthDay: string;
+  hour: string;
+  minute: string;
+}
+
+function createDefaultCronForm(): CronCreateForm {
+  return {
+    taskName: "",
+    workspace: "",
+    prompt: "",
+    model: "",
+    cycleType: "daily",
+    weekDay: "",
+    monthDay: "",
+    hour: "08",
+    minute: "00",
+  };
+}
+
 export interface ChatEphemeralState {
+  cronSubView: boolean;
+  cronFilter: "all" | "enabled" | "disabled";
+  cronSearch: string;
+  cronCreateForm: CronCreateForm;
+  cronCreateErrors: Record<string, string> | null;
+  cronEditJobId: string | null;
   sttRecording: boolean;
   sttInterimText: string;
   sessionSidebarCollapsed: boolean;
@@ -19,10 +64,23 @@ export interface ChatEphemeralState {
   searchOpen: boolean;
   searchQuery: string;
   pinnedExpanded: boolean;
+  skillsList: SkillCardEntry[];
+  skillsListLoaded: boolean;
+  skillsDropdownOpen: boolean;
+  skillsSearchQuery: string;
+  skillsTab: "my" | "market";
+  skillsPageSearchQuery: string;
+  skillsAddDropdownOpen: boolean;
 }
 
 function createChatEphemeralState(): ChatEphemeralState {
   return {
+    cronSubView: false,
+    cronFilter: "all",
+    cronSearch: "",
+    cronCreateForm: createDefaultCronForm(),
+    cronCreateErrors: null,
+    cronEditJobId: null,
     sttRecording: false,
     sttInterimText: "",
     sessionSidebarCollapsed: false,
@@ -36,6 +94,13 @@ function createChatEphemeralState(): ChatEphemeralState {
     searchOpen: false,
     searchQuery: "",
     pinnedExpanded: false,
+    skillsList: [],
+    skillsListLoaded: false,
+    skillsDropdownOpen: false,
+    skillsSearchQuery: "",
+    skillsTab: "my",
+    skillsPageSearchQuery: "",
+    skillsAddDropdownOpen: false,
   };
 }
 
@@ -95,6 +160,58 @@ export function markEmptyStateCronLoadRequested(sessionKey: string): void {
 
 export function clearEmptyStateCronLoadRequested(sessionKey: string): void {
   emptyStateCronLoadRequestedBySession.delete(sessionKey);
+}
+
+export async function loadSkillsList(client: { request: (method: string, params: Record<string, unknown>) => Promise<unknown> }): Promise<void> {
+  if (chatViewState.skillsListLoaded) return;
+  try {
+    const res = (await client.request("skills.status", {})) as {
+      skills?: Array<{
+        disabled: boolean;
+        name: string;
+        skillKey: string;
+        emoji?: string;
+        description?: string;
+        iconChar?: string;
+        iconColor?: string;
+        tags?: string[];
+        status?: string;
+        avatarUrl?: string;
+      }>;
+    } | null;
+    if (res?.skills) {
+      chatViewState.skillsList = res.skills.map((s) => ({
+        name: s.name,
+        skillKey: s.skillKey,
+        emoji: s.emoji,
+        description: s.description ?? "",
+        enabled: !s.disabled,
+        iconChar: s.iconChar ?? s.name.charAt(0),
+        iconColor: s.iconColor ?? hashSkillColor(s.skillKey),
+        tags: s.tags ?? [],
+        status: (s.status as "idle" | "updating" | "update_available") ?? "idle",
+        avatarUrl: s.avatarUrl,
+      }));
+    }
+  } catch {
+    // 技能列表加载失败时不阻断UI
+  } finally {
+    chatViewState.skillsListLoaded = true;
+  }
+}
+
+const SKILL_PALETTE = [
+  "#d19d4e", "#f08c12", "#2a79ee", "#34c5db",
+  "#616df3", "#34c5db", "#f08c12", "#d19d4e",
+];
+
+function hashSkillColor(key: string): string {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash |= 0;
+  }
+  return SKILL_PALETTE[Math.abs(hash) % SKILL_PALETTE.length];
 }
 
 export function resetChatViewState(): void {

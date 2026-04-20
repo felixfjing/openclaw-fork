@@ -1,6 +1,7 @@
 import { html, nothing } from "lit";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { t } from "../../i18n/index.ts";
+import { icons } from "../icons.ts";
 import type {
   CronFieldErrors,
   CronFieldKey,
@@ -394,165 +395,58 @@ export function renderCron(props: CronProps) {
         : t("cron.form.fixFieldsPlural", { count: String(blockingFields.length) })
       : "";
   return html`
-    <section class="card cron-summary-strip">
-      <div class="cron-summary-strip__left">
-        <div class="cron-summary-item">
-          <div class="cron-summary-label">${t("cron.summary.enabled")}</div>
-          <div class="cron-summary-value">
-            <span class=${`chip ${props.status?.enabled ? "chip-ok" : "chip-danger"}`}>
-              ${props.status
-                ? props.status.enabled
-                  ? t("cron.summary.yes")
-                  : t("cron.summary.no")
-                : t("common.na")}
-            </span>
-          </div>
-        </div>
-        <div class="cron-summary-item">
-          <div class="cron-summary-label">${t("cron.summary.jobs")}</div>
-          <div class="cron-summary-value">${props.status?.jobs ?? t("common.na")}</div>
-        </div>
-        <div class="cron-summary-item cron-summary-item--wide">
-          <div class="cron-summary-label">${t("cron.summary.nextWake")}</div>
-          <div class="cron-summary-value">${formatNextRun(props.status?.nextWakeAtMs ?? null)}</div>
-        </div>
-      </div>
-      <div class="cron-summary-strip__actions">
-        <button
-          class=${props.loading ? "btn cron-refresh-btn--loading" : "btn"}
-          ?disabled=${props.loading}
-          @click=${props.onRefresh}
-        >
-          ${props.loading ? t("cron.summary.refreshing") : t("cron.summary.refresh")}
-        </button>
-        ${props.error ? html`<span class="muted">${props.error}</span>` : nothing}
-      </div>
-    </section>
-
     <section class="cron-workspace">
       <div class="cron-workspace-main">
         <section class="card">
-          <div
-            class="row"
-            style="justify-content: space-between; align-items: flex-start; gap: 12px;"
-          >
-            <div>
-              <div class="card-title">${t("cron.jobs.title")}</div>
-              <div class="card-sub">${t("cron.jobs.subtitle")}</div>
+          <div class="cron-toolbar">
+            <div class="cron-toolbar__left">
+              <div class="cron-segmented">
+                <button
+                  class=${`cron-segmented__item ${props.jobsEnabledFilter === "all" ? "cron-segmented__item--active" : ""}`}
+                  @click=${() => props.onJobsFiltersChange({ cronJobsEnabledFilter: "all" })}
+                >全部</button>
+                <button
+                  class=${`cron-segmented__item ${props.jobsEnabledFilter === "enabled" ? "cron-segmented__item--active" : ""}`}
+                  @click=${() => props.onJobsFiltersChange({ cronJobsEnabledFilter: "enabled" })}
+                >已启用</button>
+                <button
+                  class=${`cron-segmented__item ${props.jobsEnabledFilter === "disabled" ? "cron-segmented__item--active" : ""}`}
+                  @click=${() => props.onJobsFiltersChange({ cronJobsEnabledFilter: "disabled" })}
+                >已禁用</button>
+              </div>
             </div>
-            <div class="muted">
-              ${t("cron.jobs.shownOf", {
-                shown: String(props.jobs.length),
-                total: String(props.jobsTotal),
-              })}
-            </div>
-          </div>
-          <div class="filters" style="margin-top: 12px;">
-            <label class="field cron-filter-search">
-              <span>${t("cron.jobs.searchJobs")}</span>
-              <input
-                .value=${props.jobsQuery}
-                placeholder=${t("cron.jobs.searchPlaceholder")}
-                @input=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsQuery: (e.target as HTMLInputElement).value,
-                  })}
-              />
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.enabled")}</span>
-              <select
-                .value=${props.jobsEnabledFilter}
-                @change=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsEnabledFilter: (e.target as HTMLSelectElement)
-                      .value as CronJobsEnabledFilter,
-                  })}
-              >
-                <option value="all">${t("cron.jobs.all")}</option>
-                <option value="enabled">${t("common.enabled")}</option>
-                <option value="disabled">${t("common.disabled")}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.schedule")}</span>
-              <select
-                data-test-id="cron-jobs-schedule-filter"
-                .value=${props.jobsScheduleKindFilter}
-                @change=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsScheduleKindFilter: (e.target as HTMLSelectElement)
-                      .value as CronJobsScheduleKindFilter,
-                  })}
-              >
-                <option value="all">${t("cron.jobs.all")}</option>
-                <option value="at">${t("cron.form.at")}</option>
-                <option value="every">${t("cron.form.every")}</option>
-                <option value="cron">${t("cron.form.cronOption")}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.lastRun")}</span>
-              <select
-                data-test-id="cron-jobs-last-status-filter"
-                .value=${props.jobsLastStatusFilter}
-                @change=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsLastStatusFilter: (e.target as HTMLSelectElement)
-                      .value as CronJobsLastStatusFilter,
-                  })}
-              >
-                <option value="all">${t("cron.jobs.all")}</option>
-                <option value="ok">${t("cron.runs.runStatusOk")}</option>
-                <option value="error">${t("cron.runs.runStatusError")}</option>
-                <option value="skipped">${t("cron.runs.runStatusSkipped")}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.sort")}</span>
-              <select
-                .value=${props.jobsSortBy}
-                @change=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsSortBy: (e.target as HTMLSelectElement).value as CronJobsSortBy,
-                  })}
-              >
-                <option value="nextRunAtMs">${t("cron.jobs.nextRun")}</option>
-                <option value="updatedAtMs">${t("cron.jobs.recentlyUpdated")}</option>
-                <option value="name">${t("cron.jobs.name")}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.direction")}</span>
-              <select
-                .value=${props.jobsSortDir}
-                @change=${(e: Event) =>
-                  props.onJobsFiltersChange({
-                    cronJobsSortDir: (e.target as HTMLSelectElement).value as CronSortDir,
-                  })}
-              >
-                <option value="asc">${t("cron.jobs.ascending")}</option>
-                <option value="desc">${t("cron.jobs.descending")}</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>${t("cron.jobs.reset")}</span>
+            <div class="cron-toolbar__right">
+              <label class="cron-toolbar__search">
+                <span class="cron-toolbar__search-icon">${icons.search}</span>
+                <input
+                  type="search"
+                  placeholder="搜索任务"
+                  .value=${props.jobsQuery}
+                  @input=${(e: Event) =>
+                    props.onJobsFiltersChange({
+                      cronJobsQuery: (e.target as HTMLInputElement).value,
+                    })}
+                />
+              </label>
               <button
-                class="btn"
-                data-test-id="cron-jobs-filters-reset"
-                ?disabled=${!hasActiveJobsFilters}
-                @click=${props.onJobsFiltersReset}
-              >
-                ${t("cron.jobs.reset")}
-              </button>
-            </label>
+                class="cron-toolbar__add-btn"
+                @click=${() => {
+                  props.onFormChange({ payloadKind: "agentTurn" });
+                }}
+              >新增</button>
+              <button
+                class="cron-toolbar__refresh-btn"
+                ?disabled=${props.loading}
+                @click=${props.onRefresh}
+                title="刷新"
+              >${icons.refresh}</button>
+              ${props.error ? html`<span class="cron-toolbar__error">${props.error}</span>` : nothing}
+            </div>
           </div>
           ${props.jobs.length === 0
             ? html` <div class="muted" style="margin-top: 12px">${t("cron.jobs.noMatching")}</div> `
             : html`
-                <div class="list" style="margin-top: 12px;">
-                  ${props.jobs.map((job) => renderJob(job, props))}
-                </div>
+                ${renderCronCardGrid(props)}
               `}
           ${props.jobsHasMore
             ? html`
@@ -569,6 +463,7 @@ export function renderCron(props: CronProps) {
             : nothing}
         </section>
 
+        ${props.runsJobId != null ? html`
         <section class="card">
           <div
             class="row"
@@ -697,6 +592,7 @@ export function renderCron(props: CronProps) {
               `
             : nothing}
         </section>
+        ` : nothing}
       </div>
 
       <section class="card cron-workspace-form">
@@ -1564,6 +1460,57 @@ function renderJob(job: CronJob, props: CronProps) {
           >
             ${t("cron.jobList.remove")}
           </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCronCardGrid(props: CronProps): TemplateResult {
+  return html`
+    <div class="cron-card-grid">
+      ${props.jobs.map((job) => renderCronCard(job, props))}
+    </div>
+  `;
+}
+
+function renderCronCard(job: CronJob, props: CronProps): TemplateResult {
+  const isEnabled = job.enabled;
+  const desc =
+    job.payload.kind === "systemEvent"
+      ? job.payload.text
+      : job.payload.message;
+
+  return html`
+    <div class="cron-card" @click=${() => props.onLoadRuns(job.id)}>
+      <div class="cron-card__body">
+        <div class="cron-card__icon">${icons.brain}</div>
+        <div class="cron-card__content">
+          <div class="cron-card__title-row">
+            <span class="cron-card__title" title=${ifDefined(job.name)}>${job.name}</span>
+            <button
+              class="cron-card__play-btn ${isEnabled ? "cron-card__play-btn--active" : "cron-card__play-btn--paused"}"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                props.onToggle(job, !isEnabled);
+              }}
+            >
+              ${isEnabled ? icons.play : icons.pause}
+              <span>${isEnabled ? "运行中" : "已暂停"}</span>
+            </button>
+          </div>
+          <div class="cron-card__desc" title=${ifDefined(desc)}>${desc}</div>
+        </div>
+      </div>
+      <div class="cron-card__footer">
+        <div class="cron-card__schedule">
+          <span class="cron-card__alarm">${icons.alarm}</span>
+          <span>${formatCronSchedule(job)}</span>
+        </div>
+        <div class="cron-card__last-run">
+          ${job.state?.lastRunAtMs
+            ? formatRelativeTimestamp(job.state.lastRunAtMs)
+            : "--"}
         </div>
       </div>
     </div>
