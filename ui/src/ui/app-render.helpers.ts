@@ -640,6 +640,12 @@ export async function createPersistentChatSession(state: AppViewState) {
   );
   const draft = state.chatMessage;
   const attachments = state.chatAttachments;
+  const agentId = resolveAgentIdFromSessionKey(currentSessionKey);
+  const parentSessionKey = activeRow ? currentSessionKey : undefined;
+  const model =
+    typeof activeRow?.model === "string" && activeRow.model.trim()
+      ? activeRow.model
+      : undefined;
 
   state.lastError = null;
 
@@ -647,9 +653,9 @@ export async function createPersistentChatSession(state: AppViewState) {
     const result = await state.client.request<CreateSessionResult>(
       "sessions.create",
       {
-        agentId: resolveAgentIdFromSessionKey(currentSessionKey),
-        parentSessionKey: currentSessionKey,
-        model: activeRow?.model ?? null,
+        agentId,
+        ...(parentSessionKey ? { parentSessionKey } : {}),
+        ...(model ? { model } : {}),
       },
     );
     if (!result.key) {

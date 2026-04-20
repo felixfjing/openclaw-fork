@@ -2,6 +2,7 @@ import { render } from "lit";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "../../test-helpers/load-styles.ts";
 import type { CronJob } from "../types.ts";
+import { buildAgentMainSessionKey } from "../session-key.ts";
 import {
   cleanupChatModuleState,
   renderChatStandalone,
@@ -85,7 +86,9 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
   };
 }
 
-function createStandaloneProps(overrides: Partial<StandaloneChatProps> = {}): StandaloneChatProps {
+function createStandaloneProps(
+  overrides: Partial<StandaloneChatProps> = {},
+): StandaloneChatProps {
   return {
     ...createProps(),
     agentsList: null,
@@ -164,6 +167,143 @@ describe("chat standalone model picker", () => {
     cleanupChatModuleState();
   });
 
+  it("refreshes the sidebar and cron panel when switching agents", () => {
+    const onAgentChange = vi.fn();
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const alphaSessionKey = buildAgentMainSessionKey({ agentId: "alpha" });
+    const betaSessionKey = buildAgentMainSessionKey({ agentId: "beta" });
+    const sessions: StandaloneChatProps["sessions"] = {
+      ts: 0,
+      path: "",
+      count: 2,
+      defaults: {
+        modelProvider: "openai",
+        model: "gpt-5",
+        contextTokens: null,
+      },
+      sessions: [
+        {
+          key: alphaSessionKey,
+          kind: "direct",
+          updatedAt: null,
+          label: "Alpha main",
+        },
+        {
+          key: betaSessionKey,
+          kind: "direct",
+          updatedAt: null,
+          label: "Beta main",
+        },
+      ],
+    };
+    const cronJobs: CronJob[] = [
+      {
+        id: "alpha-cron",
+        agentId: "alpha",
+        name: "Alpha cron",
+        enabled: true,
+        createdAtMs: 0,
+        updatedAtMs: 0,
+        schedule: { kind: "cron", expr: "0 9 * * *" },
+        sessionTarget: "main",
+        wakeMode: "next-heartbeat",
+        payload: { kind: "systemEvent", text: "Alpha task" },
+        state: {
+          lastStatus: "ok",
+          nextRunAtMs: 1_700_000_000_000,
+          lastRunAtMs: 1_699_999_000_000,
+        },
+      },
+      {
+        id: "beta-cron",
+        agentId: "beta",
+        name: "Beta cron",
+        enabled: true,
+        createdAtMs: 0,
+        updatedAtMs: 0,
+        schedule: { kind: "cron", expr: "30 10 * * *" },
+        sessionTarget: "main",
+        wakeMode: "next-heartbeat",
+        payload: { kind: "systemEvent", text: "Beta task" },
+        state: {
+          lastStatus: "error",
+          nextRunAtMs: 1_700_100_000_000,
+          lastRunAtMs: 1_700_090_000_000,
+        },
+      },
+    ];
+
+    render(
+      renderChatStandalone(
+        createStandaloneProps({
+          agentsList: {
+            defaultId: "alpha",
+            agents: [
+              { id: "alpha", name: "Alpha" },
+              { id: "beta", identity: { name: "Beta" } },
+            ],
+          },
+          sessionKey: alphaSessionKey,
+          sessions,
+          cronJobs,
+          currentAgentId: "alpha",
+          onAgentChange,
+          messages: [],
+        }),
+      ),
+      container,
+    );
+
+    const agentSelect = container.querySelector<HTMLSelectElement>(
+      ".chat-session-sidebar__agent-select-control",
+    );
+    expect(agentSelect).not.toBeNull();
+    expect(agentSelect?.value).toBe("alpha");
+    expect(container.textContent).toContain("Alpha (default)");
+    expect(container.textContent).toContain("Beta");
+    expect(container.textContent).toContain("Alpha main");
+    expect(container.textContent).not.toContain("Beta main");
+    expect(container.textContent).toContain("Alpha cron");
+    expect(container.textContent).not.toContain("Beta cron");
+
+    if (!agentSelect) {
+      return;
+    }
+
+    agentSelect.value = "beta";
+    agentSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(onAgentChange).toHaveBeenCalledWith("beta");
+
+    render(
+      renderChatStandalone(
+        createStandaloneProps({
+          agentsList: {
+            defaultId: "alpha",
+            agents: [
+              { id: "alpha", name: "Alpha" },
+              { id: "beta", identity: { name: "Beta" } },
+            ],
+          },
+          sessionKey: betaSessionKey,
+          sessions,
+          cronJobs,
+          currentAgentId: "beta",
+          onAgentChange,
+          messages: [],
+        }),
+      ),
+      container,
+    );
+
+    expect(container.textContent).toContain("Beta main");
+    expect(container.textContent).not.toContain("Alpha main");
+    expect(container.textContent).toContain("Beta cron");
+    expect(container.textContent).not.toContain("Alpha cron");
+  });
+
   it("renders the footer selector as a model picker", () => {
     const container = document.createElement("div");
     document.body.append(container);
@@ -174,49 +314,56 @@ describe("chat standalone model picker", () => {
     );
     expect(modelSelect).not.toBeNull();
     expect(modelSelect?.value).toBe("openai/gpt-5-mini");
-    expect(container.querySelector(".agent-chat__agent-select-label")?.textContent).toBe("Model");
+    expect(
+      container.querySelector(".agent-chat__model-chip-name")?.textContent,
+    ).toBe("GPT-5 Mini · openai");
   });
 
-  it("renders cron tasks in the empty state", () => {
+  it("renders cron tasks on the cron route", () => {
     const container = document.createElement("div");
-    const onLoadCron = vi.fn();
-    const cronJobs: CronJob[] = [
-      {
-        id: "cron-1",
-        name: "Daily ping",
-        enabled: true,
-        createdAtMs: 0,
-        updatedAtMs: 0,
-        schedule: { kind: "cron", expr: "0 9 * * *" },
-        sessionTarget: "main",
-        wakeMode: "next-heartbeat",
-        payload: { kind: "systemEvent", text: "Ping the main timeline" },
-        state: {
-          lastStatus: "error",
-          nextRunAtMs: 1_700_000_000_000,
-          lastRunAtMs: 1_699_999_000_000,
+    const onLoadCron = vi.fn(() => Promise.resolve());
+    const previousHash = window.location.hash;
+    try {
+      window.location.hash = "#cron";
+      const cronJobs: CronJob[] = [
+        {
+          id: "cron-1",
+          name: "Daily ping",
+          enabled: true,
+          createdAtMs: 0,
+          updatedAtMs: 0,
+          schedule: { kind: "cron", expr: "0 9 * * *" },
+          sessionTarget: "main",
+          wakeMode: "next-heartbeat",
+          payload: { kind: "systemEvent", text: "Ping the main timeline" },
+          state: {
+            lastStatus: "error",
+            nextRunAtMs: 1_700_000_000_000,
+            lastRunAtMs: 1_699_999_000_000,
+          },
         },
-      },
-    ];
+      ];
 
-    render(
-      renderChatStandalone(
-        createStandaloneProps({
-          cronJobs,
-          loadCron: onLoadCron,
-        }),
-      ),
-      container,
-    );
+      render(
+        renderChatStandalone(
+          createStandaloneProps({
+            cronJobs,
+            loadCron: onLoadCron,
+          }),
+        ),
+        container,
+      );
 
-    const taskList = container.querySelector(".chat-standalone-empty__jobs");
-    expect(taskList).not.toBeNull();
-    expect(container.querySelectorAll(".chat-standalone-empty__job-card")).toHaveLength(1);
-    expect(container.textContent).toContain("Daily ping");
-    expect(container.textContent).toContain("Ping the main timeline");
-    expect(container.textContent).toContain("main");
-    expect(container.textContent).toContain("next-heartbeat");
-    expect(container.textContent).toContain("Error");
-    expect(onLoadCron).toHaveBeenCalledTimes(1);
+      const cardGrid = container.querySelector(".cron-card-grid");
+      expect(cardGrid).not.toBeNull();
+      expect(container.querySelectorAll(".cron-card")).toHaveLength(1);
+      expect(container.textContent).toContain("Daily ping");
+      expect(container.textContent).toContain("Ping the main timeline");
+      expect(container.textContent).toContain("Cron 0 9 * * *");
+      expect(container.textContent).toContain("运行中");
+      expect(onLoadCron).toHaveBeenCalledTimes(1);
+    } finally {
+      window.location.hash = previousHash;
+    }
   });
 });

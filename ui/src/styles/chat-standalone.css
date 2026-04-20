@@ -146,41 +146,15 @@
   height: calc(100dvh - 20px);
 }
 
-.chat-session-sidebar__workspace {
+.chat-session-sidebar__agent-select {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: 4px;
-  background: #e6e8eb;
+  width: 100%;
   box-sizing: border-box;
 }
 
-.chat-session-sidebar__workspace-name {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
-  color: #1e1f1f;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-session-sidebar__workspace-caret {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  color: #1e1f1f;
-  flex-shrink: 0;
-}
-
-.chat-session-sidebar__workspace-caret svg {
-  width: 16px;
-  height: 16px;
+.chat-session-sidebar__agent-select-control {
+  width: 100%;
+  min-width: 0;
 }
 
 .chat-standalone__shell > .chat-session-sidebar {
@@ -200,7 +174,7 @@
 }
 
 .chat-session-sidebar__section-title {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
@@ -238,7 +212,7 @@
   color: #0080ff;
   box-sizing: border-box;
   box-shadow: none;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
@@ -430,7 +404,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
@@ -559,7 +533,7 @@
 }
 
 .chat--standalone .cron-task-panel__header-label {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -575,7 +549,7 @@
   padding: 0 8px;
   border-radius: 4px;
   background: rgba(0, 128, 255, 0.08);
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
@@ -593,7 +567,7 @@
 }
 
 .chat--standalone .cron-task-panel__header-more {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
@@ -626,7 +600,7 @@
   padding: 24px 12px;
   border: 1px dashed #e6e8eb;
   border-radius: 8px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
   line-height: 20px;
   color: #8e9091;
@@ -645,7 +619,7 @@
 }
 
 .chat--standalone .cron-task-card__title {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 24px;
@@ -705,7 +679,7 @@
 }
 
 .chat--standalone .cron-task-card__item-text {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
   font-weight: 400;
   line-height: 14px;
@@ -720,7 +694,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
@@ -754,7 +728,7 @@
 }
 
 .chat--standalone .cron-task-card__item-time-label {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
@@ -763,7 +737,7 @@
 }
 
 .chat--standalone .cron-task-card__item-time-value {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
@@ -1226,7 +1200,7 @@
 .chat--standalone .agent-chat__model-chip-name {
   font-size: 12px;
   line-height: 22px;
-  font-family: 'PingFang SC', sans-serif;
+  font-family: "PingFang SC", sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1272,7 +1246,7 @@
 }
 
 .chat--standalone .agent-chat__toolbar-divider::after {
-  content: '';
+  content: "";
   display: block;
   width: 1px;
   height: 14.5px;
@@ -1313,7 +1287,7 @@
 .chat--standalone .agent-chat__toolbar-chip-label {
   font-size: 12px;
   line-height: 22px;
-  font-family: 'PingFang SC', sans-serif;
+  font-family: "PingFang SC", sans-serif;
   white-space: nowrap;
 }
 
@@ -1552,7 +1526,9 @@
   margin: 0 auto;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   color: #8e9091;
   position: relative;
 }
@@ -1718,7 +1694,9 @@
   cursor: pointer;
   color: #8e9091;
   border-radius: 4px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .cron-create__header-close:hover {
@@ -1973,7 +1951,9 @@
   font-size: 14px;
   line-height: 22px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
   box-sizing: border-box;
 }
 
@@ -2044,7 +2024,7 @@
 }
 
 .skills-header__tab-text {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   line-height: 22px;
   color: #1e1f1f;
@@ -2136,7 +2116,7 @@
   line-height: 20px;
   cursor: pointer;
   box-sizing: border-box;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 .skills-header__add-btn:hover {
@@ -2258,7 +2238,7 @@
 }
 
 .skill-card__icon-char {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   line-height: 22px;
   color: #fff;
@@ -2280,7 +2260,7 @@
 .skill-card__name {
   flex: 1 1 auto;
   min-width: 0;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 22px;
@@ -2316,11 +2296,13 @@
 }
 
 @keyframes skill-card-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .skill-card__status-text {
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   line-height: 20px;
   color: #0080ff;
@@ -2366,7 +2348,7 @@
 
 .skill-card__desc {
   padding-left: 32px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   line-height: 20px;
   color: #8e9091;
@@ -2392,7 +2374,7 @@
   padding: 0 4px;
   background: #f2f3f8;
   border-radius: 2px;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
   line-height: 20px;
   color: #7f8bb7;
@@ -2441,7 +2423,9 @@
   padding: 7px 10px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .slash-menu-item:hover,
@@ -2478,7 +2462,7 @@
 .slash-menu-name {
   font-size: 0.82rem;
   font-weight: 600;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   color: #0080ff;
   white-space: nowrap;
 }
@@ -2486,7 +2470,7 @@
 .slash-menu-args {
   font-size: 0.75rem;
   color: #999;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   opacity: 0.65;
 }
 
@@ -2533,7 +2517,7 @@
   display: inline-block;
   padding: 1px 4px;
   font-size: 0.65rem;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   border: 1px solid #e0e2e8;
   border-radius: 3px;
   background: #f5f7fa;

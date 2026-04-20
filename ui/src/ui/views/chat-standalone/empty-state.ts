@@ -6,6 +6,7 @@ import { formatCronSchedule } from "../../presenter.ts";
 import { icons } from "../../icons.ts";
 import type { CronJob } from "../../types.ts";
 import type { ChatProps } from "./types.ts";
+import { filterCronJobsForAgent } from "./agent-filters.ts";
 import { chatViewState } from "./state.ts";
 
 function resolveEmptyStateImageUrl(basePath: string | undefined): string {
@@ -41,7 +42,11 @@ function formatTimeFull(ms?: number | null | undefined): string {
 
 function computeTodayStats(jobs: CronJob[]) {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
   let total = 0;
   let ok = 0;
   let error = 0;
@@ -59,7 +64,10 @@ function computeTodayStats(jobs: CronJob[]) {
 }
 
 function renderCronTaskPanel(props: ChatProps): TemplateResult {
-  const jobs = props.cronJobs ?? [];
+  const jobs = filterCronJobsForAgent(
+    props.cronJobs ?? [],
+    props.currentAgentId,
+  );
   const stats = computeTodayStats(jobs);
 
   return html`
@@ -72,13 +80,16 @@ function renderCronTaskPanel(props: ChatProps): TemplateResult {
             今天执行${stats.total}次，成功${stats.ok}次，失败${stats.error}次
           </span>
         </div>
-        <div class="cron-task-panel__header-right"
+        <div
+          class="cron-task-panel__header-right"
           @click=${() => {
             window.location.hash = "#cron";
           }}
         >
           <span class="cron-task-panel__header-more">更多</span>
-          <span class="cron-task-panel__header-arrow">${icons.chevronRight}</span>
+          <span class="cron-task-panel__header-arrow"
+            >${icons.chevronRight}</span
+          >
         </div>
       </div>
       ${jobs.length > 0
@@ -102,9 +113,7 @@ function renderCronTaskCard(job: CronJob): TemplateResult {
   const statusLabel = resolveTaskStatusLabel(lastStatus);
 
   const taskLabel =
-    job.payload.kind === "systemEvent"
-      ? job.payload.text
-      : job.payload.message;
+    job.payload.kind === "systemEvent" ? job.payload.text : job.payload.message;
 
   return html`
     <div class="cron-task-card">
@@ -114,7 +123,11 @@ function renderCronTaskCard(job: CronJob): TemplateResult {
           <div class="cron-task-card__item-row">
             <div class="cron-task-card__item-name">
               <span class="cron-task-card__item-icon">${icons.fileText}</span>
-              <span class="cron-task-card__item-text" title=${ifDefined(taskLabel)}>${taskLabel}</span>
+              <span
+                class="cron-task-card__item-text"
+                title=${ifDefined(taskLabel)}
+                >${taskLabel}</span
+              >
             </div>
             <div class=${`cron-task-card__item-status ${statusClass}`}>
               ${isSuccess ? icons.check : isError ? icons.x : nothing}
@@ -123,44 +136,54 @@ function renderCronTaskCard(job: CronJob): TemplateResult {
           </div>
           <div class="cron-task-card__item-time">
             <span class="cron-task-card__item-time-label">执行时间</span>
-            <span class="cron-task-card__item-time-value" title=${ifDefined(formatTimeFull(job.state?.lastRunAtMs))}>
+            <span
+              class="cron-task-card__item-time-value"
+              title=${ifDefined(formatTimeFull(job.state?.lastRunAtMs))}
+            >
               ${formatTime(job.state?.lastRunAtMs)}
             </span>
           </div>
         </div>
         ${job.state?.nextRunAtMs
           ? html`
-            <div class="cron-task-card__item">
-              <div class="cron-task-card__item-row">
-                <div class="cron-task-card__item-name">
-                  <span class="cron-task-card__item-icon">${icons.clock}</span>
-                  <span class="cron-task-card__item-text">下次执行</span>
+              <div class="cron-task-card__item">
+                <div class="cron-task-card__item-row">
+                  <div class="cron-task-card__item-name">
+                    <span class="cron-task-card__item-icon"
+                      >${icons.clock}</span
+                    >
+                    <span class="cron-task-card__item-text">下次执行</span>
+                  </div>
+                </div>
+                <div class="cron-task-card__item-time">
+                  <span class="cron-task-card__item-time-label">计划时间</span>
+                  <span
+                    class="cron-task-card__item-time-value"
+                    title=${ifDefined(formatTimeFull(job.state?.nextRunAtMs))}
+                  >
+                    ${formatTime(job.state?.nextRunAtMs)}
+                  </span>
                 </div>
               </div>
-              <div class="cron-task-card__item-time">
-                <span class="cron-task-card__item-time-label">计划时间</span>
-                <span class="cron-task-card__item-time-value" title=${ifDefined(formatTimeFull(job.state?.nextRunAtMs))}>
-                  ${formatTime(job.state?.nextRunAtMs)}
-                </span>
-              </div>
-            </div>
-          `
+            `
           : nothing}
         ${job.schedule
           ? html`
-            <div class="cron-task-card__item">
-              <div class="cron-task-card__item-row">
-                <div class="cron-task-card__item-name">
-                  <span class="cron-task-card__item-icon">${icons.zap}</span>
-                  <span class="cron-task-card__item-text">调度规则</span>
+              <div class="cron-task-card__item">
+                <div class="cron-task-card__item-row">
+                  <div class="cron-task-card__item-name">
+                    <span class="cron-task-card__item-icon">${icons.zap}</span>
+                    <span class="cron-task-card__item-text">调度规则</span>
+                  </div>
+                </div>
+                <div class="cron-task-card__item-time">
+                  <span class="cron-task-card__item-time-label">规则</span>
+                  <span class="cron-task-card__item-time-value"
+                    >${formatCronSchedule(job)}</span
+                  >
                 </div>
               </div>
-              <div class="cron-task-card__item-time">
-                <span class="cron-task-card__item-time-label">规则</span>
-                <span class="cron-task-card__item-time-value">${formatCronSchedule(job)}</span>
-              </div>
-            </div>
-          `
+            `
           : nothing}
       </div>
     </div>
@@ -172,7 +195,11 @@ export function renderEmptyState(props: ChatProps): TemplateResult {
   return html`
     <div class="chat-standalone-empty" role="status" aria-live="polite">
       <div class="chat-standalone-empty__content">
-        <img class="chat-standalone-empty__image" src=${imageUrl} alt="Empty chat state" />
+        <img
+          class="chat-standalone-empty__image"
+          src=${imageUrl}
+          alt="Empty chat state"
+        />
         ${renderCronTaskPanel(props)}
       </div>
     </div>

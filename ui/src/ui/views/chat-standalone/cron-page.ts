@@ -4,6 +4,7 @@ import { formatRelativeTimestamp } from "../../format.ts";
 import { formatCronSchedule } from "../../presenter.ts";
 import type { CronJob } from "../../types.ts";
 import type { ChatProps } from "./types.ts";
+import { filterCronJobsForAgent } from "./agent-filters.ts";
 
 type CronFilter = "all" | "enabled" | "disabled";
 
@@ -21,7 +22,11 @@ const sidebarItems: SidebarItem[] = [
   { key: "docs", label: "文档中心", icon: icons.fileText },
 ];
 
-function filterJobs(jobs: CronJob[], filter: CronFilter, query: string): CronJob[] {
+function filterJobs(
+  jobs: CronJob[],
+  filter: CronFilter,
+  query: string,
+): CronJob[] {
   let filtered = jobs;
   if (filter === "enabled") {
     filtered = filtered.filter((j) => j.enabled);
@@ -48,7 +53,9 @@ function renderSidebar(): TemplateResult {
         ${sidebarItems.map(
           (item) => html`
             <div
-              class="cron-page__sidebar-item ${item.key === "cron" ? "cron-page__sidebar-item--active" : ""}"
+              class="cron-page__sidebar-item ${item.key === "cron"
+                ? "cron-page__sidebar-item--active"
+                : ""}"
               title=${item.label}
             >
               <span class="cron-page__sidebar-icon">${item.icon}</span>
@@ -81,7 +88,8 @@ function renderTabBar(): TemplateResult {
             @click=${() => {
               window.location.hash = "";
             }}
-          >${icons.x}</span>
+            >${icons.x}</span
+          >
         </div>
       </div>
       <div class="cron-page__tabbar-actions">
@@ -94,12 +102,15 @@ function renderTabBar(): TemplateResult {
 function renderCronCard(job: CronJob): TemplateResult {
   const isEnabled = job.enabled;
   const desc =
-    job.payload.kind === "systemEvent"
-      ? job.payload.text
-      : job.payload.message;
+    job.payload.kind === "systemEvent" ? job.payload.text : job.payload.message;
 
   return html`
-    <div class="cron-card" @click=${() => { window.location.hash = `#cron/edit/${job.id}`; }}>
+    <div
+      class="cron-card"
+      @click=${() => {
+        window.location.hash = `#cron/edit/${job.id}`;
+      }}
+    >
       <div class="cron-card__body">
         <div class="cron-card__title-row">
           <span class="cron-card__icon">${icons.brain}</span>
@@ -113,7 +124,9 @@ function renderCronCard(job: CronJob): TemplateResult {
         </div>
         <div class="cron-card__desc" title=${desc ?? ""}>${desc}</div>
       </div>
-      <div class="cron-card__divider"><div class="cron-card__divider-line"></div></div>
+      <div class="cron-card__divider">
+        <div class="cron-card__divider-line"></div>
+      </div>
       <div class="cron-card__footer">
         <div class="cron-card__schedule">
           <span class="cron-card__alarm">${icons.alarm}</span>
@@ -135,7 +148,10 @@ export function renderCronPage(
   onFilterChange: (filter: CronFilter) => void,
   onSearchChange: (query: string) => void,
 ): TemplateResult {
-  const jobs = props.cronJobs ?? [];
+  const jobs = filterCronJobsForAgent(
+    props.cronJobs ?? [],
+    props.currentAgentId,
+  );
   const filtered = filterJobs(jobs, state.cronFilter, state.cronSearch);
 
   return html`
@@ -148,7 +164,9 @@ export function renderCronPage(
               class="cron-page__filter-select"
               .value=${state.cronFilter}
               @change=${(e: Event) =>
-                onFilterChange((e.target as HTMLSelectElement).value as CronFilter)}
+                onFilterChange(
+                  (e.target as HTMLSelectElement).value as CronFilter,
+                )}
             >
               <option value="all">全部</option>
               <option value="enabled">已启用</option>
@@ -169,7 +187,9 @@ export function renderCronPage(
               @click=${() => {
                 window.location.hash = "#cron/create";
               }}
-            >新增</button>
+            >
+              新增
+            </button>
           </div>
         </div>
         <div class="cron-page__content">

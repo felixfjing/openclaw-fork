@@ -16,9 +16,15 @@ import {
 } from "../../chat-claw/slash-commands.ts";
 import type { GatewaySessionRow } from "../../types.ts";
 import type { PinnedMessages } from "../../chat-claw/pinned-messages.ts";
-import { agentLogoUrl, resolveAgentAvatarUrl } from "../agents-utils.ts";
+import {
+  agentBadgeText,
+  agentLogoUrl,
+  normalizeAgentLabel,
+  resolveAgentAvatarUrl,
+} from "../agents-utils.ts";
 import { detectTextDirection } from "../../text-direction.ts";
 import type { ChatProps } from "./types.ts";
+import { filterSessionsForAgent } from "./agent-filters.ts";
 import { chatViewState } from "./state.ts";
 import { selectSlashArg, selectSlashCommand } from "./interaction.ts";
 
@@ -49,12 +55,72 @@ function formatSessionTimestamp(timestamp: number | null | undefined): string {
   return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
+function renderAgentSelect(
+  props: ChatProps,
+  requestUpdate: () => void,
+): TemplateResult {
+  const agents = props.agentsList?.agents ?? [];
+  const defaultId = props.agentsList?.defaultId ?? null;
+  const resolvedSelectedId =
+    agents.find((agent) => agent.id === props.currentAgentId)?.id ??
+    defaultId ??
+    agents[0]?.id ??
+    "";
+  const selectedAgent =
+    agents.find((agent) => agent.id === resolvedSelectedId) ?? null;
+  const selectedLabel = selectedAgent
+    ? `${normalizeAgentLabel(selectedAgent)}${agentBadgeText(selectedAgent.id, defaultId) ? " (default)" : ""}`
+    : "暂无 agent";
+
+  return html`
+    <div class="chat-session-sidebar__agent-select">
+      <select
+        class="agents-select chat-session-sidebar__agent-select-control"
+        aria-label="切换 agent"
+        title=${selectedLabel}
+        ?disabled=${!props.connected || agents.length === 0}
+        .value=${resolvedSelectedId}
+        @change=${(event: Event) => {
+          const next = (event.target as HTMLSelectElement).value;
+          if (next && next !== props.currentAgentId) {
+            props.onAgentChange(next);
+            requestUpdate();
+          }
+        }}
+      >
+        ${agents.length === 0
+          ? html`<option value="">暂无 agent</option>`
+          : repeat(
+              agents,
+              (agent) => agent.id,
+              (agent) => html`
+                <option
+                  value=${agent.id}
+                  ?selected=${agent.id === resolvedSelectedId}
+                >
+                  ${normalizeAgentLabel(agent)}${agentBadgeText(
+                    agent.id,
+                    defaultId,
+                  )
+                    ? " (default)"
+                    : ""}
+                </option>
+              `,
+            )}
+      </select>
+    </div>
+  `;
+}
+
 function renderSessionSidebar(
   props: ChatProps,
   requestUpdate: () => void,
 ): TemplateResult {
   const query = chatViewState.sessionSidebarSearch.trim().toLowerCase();
-  const sessions = [...(props.sessions?.sessions ?? [])].toSorted((a, b) => {
+  const sessions = filterSessionsForAgent(
+    [...(props.sessions?.sessions ?? [])],
+    props.currentAgentId,
+  ).toSorted((a, b) => {
     const at = a.updatedAt ?? 0;
     const bt = b.updatedAt ?? 0;
     return bt - at;
@@ -71,10 +137,7 @@ function renderSessionSidebar(
     : sessions;
   return html`
     <aside class="chat-session-sidebar">
-      <div class="chat-session-sidebar__workspace">
-        <span class="chat-session-sidebar__workspace-name">WarrenQ_workspace</span>
-        <span class="chat-session-sidebar__workspace-caret">${icons.caretDownFill}</span>
-      </div>
+      ${renderAgentSelect(props, requestUpdate)}
 
       <div class="chat-session-sidebar__new-wrap">
         <button
@@ -138,7 +201,9 @@ function renderSessionSidebar(
                       }}
                     >
                       <span class="chat-session-sidebar__item-icon"></span>
-                      <span class="chat-session-sidebar__item-title">${label}</span>
+                      <span class="chat-session-sidebar__item-title"
+                        >${label}</span
+                      >
                     </button>
                     <button
                       class="chat-session-sidebar__item-delete"
@@ -151,7 +216,9 @@ function renderSessionSidebar(
                           void props.onDeleteSession(session.key);
                         }
                       }}
-                    >${icons.trash}</button>
+                    >
+                      ${icons.trash}
+                    </button>
                   </div>
                 `;
               },

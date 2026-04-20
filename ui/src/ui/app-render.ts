@@ -20,11 +20,19 @@ import {
   switchChatModel,
   switchChatSession,
 } from "./app-render.helpers.ts";
+import { resolveFirstSessionKeyForAgent } from "./views/chat-standalone/agent-filters.ts";
 import { warnQueryToken } from "./app-settings.ts";
 import type { AppViewState } from "./app-view-state.ts";
 import { resolveChatModelSelectState } from "./chat-model-select-state.ts";
-import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
-import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
+import {
+  loadAgentFileContent,
+  loadAgentFiles,
+  saveAgentFile,
+} from "./controllers/agent-files.ts";
+import {
+  loadAgentIdentities,
+  loadAgentIdentity,
+} from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
 import {
   buildToolsEffectiveRequestKey,
@@ -120,7 +128,12 @@ import {
 import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "./external-link.ts";
 import "./components/dashboard-header.ts";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import {
+  normalizeBasePath,
+  TAB_GROUPS,
+  subtitleForTab,
+  titleForTab,
+} from "./navigation.ts";
 import { isPluginEnabledInConfigSnapshot } from "./plugin-activation.ts";
 import { agentLogoUrl } from "./views/agents-utils.ts";
 import {
@@ -209,7 +222,8 @@ function lazyRender<M>(getter: () => M | null, render: (mod: M) => unknown) {
   return mod ? render(mod) : nothing;
 }
 
-const UPDATE_BANNER_DISMISS_KEY = "openclaw:control-ui:update-banner-dismissed:v1";
+const UPDATE_BANNER_DISMISS_KEY =
+  "openclaw:control-ui:update-banner-dismissed:v1";
 const CRON_THINKING_SUGGESTIONS = ["off", "minimal", "low", "medium", "high"];
 const CRON_TIMEZONE_SUGGESTIONS = [
   "UTC",
@@ -267,7 +281,10 @@ function loadDismissedUpdateBanner(): DismissedUpdateBanner | null {
     return {
       latestVersion: parsed.latestVersion,
       channel: typeof parsed.channel === "string" ? parsed.channel : null,
-      dismissedAtMs: typeof parsed.dismissedAtMs === "number" ? parsed.dismissedAtMs : Date.now(),
+      dismissedAtMs:
+        typeof parsed.dismissedAtMs === "number"
+          ? parsed.dismissedAtMs
+          : Date.now(),
     };
   } catch {
     return null;
@@ -283,10 +300,14 @@ function isUpdateBannerDismissed(updateAvailable: unknown): boolean {
     latestVersion?: unknown;
     channel?: unknown;
   };
-  const latestVersion = info && typeof info.latestVersion === "string" ? info.latestVersion : null;
-  const channel = info && typeof info.channel === "string" ? info.channel : null;
+  const latestVersion =
+    info && typeof info.latestVersion === "string" ? info.latestVersion : null;
+  const channel =
+    info && typeof info.channel === "string" ? info.channel : null;
   return Boolean(
-    latestVersion && dismissed.latestVersion === latestVersion && dismissed.channel === channel,
+    latestVersion &&
+    dismissed.latestVersion === latestVersion &&
+    dismissed.channel === channel,
   );
 }
 
@@ -295,18 +316,23 @@ function dismissUpdateBanner(updateAvailable: unknown) {
     latestVersion?: unknown;
     channel?: unknown;
   };
-  const latestVersion = info && typeof info.latestVersion === "string" ? info.latestVersion : null;
+  const latestVersion =
+    info && typeof info.latestVersion === "string" ? info.latestVersion : null;
   if (!latestVersion) {
     return;
   }
-  const channel = info && typeof info.channel === "string" ? info.channel : null;
+  const channel =
+    info && typeof info.channel === "string" ? info.channel : null;
   const payload: DismissedUpdateBanner = {
     latestVersion,
     channel,
     dismissedAtMs: Date.now(),
   };
   try {
-    getSafeLocalStorage()?.setItem(UPDATE_BANNER_DISMISS_KEY, JSON.stringify(payload));
+    getSafeLocalStorage()?.setItem(
+      UPDATE_BANNER_DISMISS_KEY,
+      JSON.stringify(payload),
+    );
   } catch {
     // ignore
   }
@@ -314,7 +340,13 @@ function dismissUpdateBanner(updateAvailable: unknown) {
 
 const AVATAR_DATA_RE = /^data:/i;
 const AVATAR_HTTP_RE = /^https?:\/\//i;
-const COMMUNICATION_SECTION_KEYS = ["channels", "messages", "broadcast", "talk", "audio"] as const;
+const COMMUNICATION_SECTION_KEYS = [
+  "channels",
+  "messages",
+  "broadcast",
+  "talk",
+  "audio",
+] as const;
 const APPEARANCE_SECTION_KEYS = ["__appearance__", "ui", "wizard"] as const;
 const AUTOMATION_SECTION_KEYS = [
   "commands",
@@ -426,7 +458,9 @@ export function renderApp(state: AppViewState) {
   // Gate: require successful gateway connection before showing the dashboard.
   // The gateway URL confirmation overlay is always rendered so URL-param flows still work.
   if (!state.connected) {
-    return html` ${renderLoginGate(state)} ${renderGatewayUrlConfirmation(state)} `;
+    return html`
+      ${renderLoginGate(state)} ${renderGatewayUrlConfirmation(state)}
+    `;
   }
 
   const presenceCount = state.presenceEntries.length;
@@ -435,20 +469,31 @@ export function renderApp(state: AppViewState) {
   const chatDisabledReason = state.connected ? null : t("chat.disconnected");
   const isChat = state.tab === "chat";
   const standaloneChat = isChat && state.chatStandalone;
-  const chatFocus = isChat && (state.settings.chatFocusMode || state.onboarding || standaloneChat);
-  const navDrawerOpen = state.navDrawerOpen && !chatFocus && !state.onboarding && !standaloneChat;
+  const chatFocus =
+    isChat &&
+    (state.settings.chatFocusMode || state.onboarding || standaloneChat);
+  const navDrawerOpen =
+    state.navDrawerOpen && !chatFocus && !state.onboarding && !standaloneChat;
   const navCollapsed = state.settings.navCollapsed && !navDrawerOpen;
-  const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
-  const showToolCalls = state.onboarding ? true : state.settings.chatShowToolCalls;
+  const showThinking = state.onboarding
+    ? false
+    : state.settings.chatShowThinking;
+  const showToolCalls = state.onboarding
+    ? true
+    : state.settings.chatShowToolCalls;
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
   const configValue =
-    state.configForm ?? (state.configSnapshot?.config as Record<string, unknown> | null);
+    state.configForm ??
+    (state.configSnapshot?.config as Record<string, unknown> | null);
   const configuredDreaming = resolveConfiguredDreaming(configValue);
-  const dreamingOn = state.dreamingStatus?.enabled ?? configuredDreaming.enabled;
+  const dreamingOn =
+    state.dreamingStatus?.enabled ?? configuredDreaming.enabled;
   const dreamingNextCycle = resolveDreamingNextCycle(state.dreamingStatus);
-  const dreamingLoading = state.dreamingStatusLoading || state.dreamingModeSaving;
-  const dreamingRefreshLoading = state.dreamingStatusLoading || state.dreamDiaryLoading;
+  const dreamingLoading =
+    state.dreamingStatusLoading || state.dreamingModeSaving;
+  const dreamingRefreshLoading =
+    state.dreamingStatusLoading || state.dreamDiaryLoading;
   const refreshDreaming = () => {
     void (async () => {
       await loadConfig(state);
@@ -477,9 +522,13 @@ export function renderApp(state: AppViewState) {
       truncated?: unknown;
     } | null;
     const title =
-      typeof payload?.title === "string" && payload.title.trim() ? payload.title.trim() : lookup;
+      typeof payload?.title === "string" && payload.title.trim()
+        ? payload.title.trim()
+        : lookup;
     const path =
-      typeof payload?.path === "string" && payload.path.trim() ? payload.path.trim() : lookup;
+      typeof payload?.path === "string" && payload.path.trim()
+        ? payload.path.trim()
+        : lookup;
     const content =
       typeof payload?.content === "string" && payload.content.length > 0
         ? payload.content
@@ -489,7 +538,8 @@ export function renderApp(state: AppViewState) {
         ? payload.updatedAt.trim()
         : undefined;
     const totalLines =
-      typeof payload?.totalLines === "number" && Number.isFinite(payload.totalLines)
+      typeof payload?.totalLines === "number" &&
+      Number.isFinite(payload.totalLines)
         ? Math.max(0, Math.floor(payload.totalLines))
         : undefined;
     const truncated = payload?.truncated === true;
@@ -598,7 +648,13 @@ export function renderApp(state: AppViewState) {
     agentsList: state.agentsList,
     currentAgentId: resolvedAgentId ?? "main",
     onAgentChange: (agentId) => {
-      switchChatSession(state, buildAgentMainSessionKey({ agentId }));
+      state.agentsSelectedId = agentId;
+      const nextSessionKey =
+        resolveFirstSessionKeyForAgent(
+          state.sessionsResult?.sessions ?? [],
+          agentId,
+        ) ?? buildAgentMainSessionKey({ agentId });
+      switchChatSession(state, nextSessionKey);
     },
     modelSelectState: resolveChatModelSelectState(state),
     onModelChange: (modelId) => {
@@ -614,13 +670,17 @@ export function renderApp(state: AppViewState) {
     onDeleteSession: async (key) => {
       const deleted = await deleteSessionsAndRefresh(state, [key]);
       if (deleted.length > 0 && state.sessionKey === key) {
-        const remaining = state.sessions?.sessions ?? [];
-        if (remaining.length > 0) {
-          switchChatSession(state, remaining[0].key);
+        const nextSessionKey = resolveFirstSessionKeyForAgent(
+          state.sessionsResult?.sessions ?? [],
+          resolvedAgentId ?? "main",
+        );
+        if (nextSessionKey) {
+          switchChatSession(state, nextSessionKey);
         }
       }
     },
-    showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
+    showNewMessages:
+      state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
     onScrollToBottom: () => state.scrollToBottom(),
     // Sidebar props for tool output viewing
     sidebarOpen: state.sidebarOpen,
@@ -641,20 +701,25 @@ export function renderApp(state: AppViewState) {
   };
   const activeSessionAgentId = resolveAgentIdFromSessionKey(state.sessionKey);
   const toolsPanelUsesActiveSession = Boolean(
-    resolvedAgentId && activeSessionAgentId && resolvedAgentId === activeSessionAgentId,
+    resolvedAgentId &&
+    activeSessionAgentId &&
+    resolvedAgentId === activeSessionAgentId,
   );
   const getCurrentConfigValue = () =>
-    state.configForm ?? (state.configSnapshot?.config as Record<string, unknown> | null);
+    state.configForm ??
+    (state.configSnapshot?.config as Record<string, unknown> | null);
   const findAgentIndex = (agentId: string) =>
     findAgentConfigEntryIndex(getCurrentConfigValue(), agentId);
-  const ensureAgentIndex = (agentId: string) => ensureAgentConfigEntry(state, agentId);
+  const ensureAgentIndex = (agentId: string) =>
+    ensureAgentConfigEntry(state, agentId);
   const resolveAgentToolsPath = (agentId: string, ensure: boolean) => {
     const index = ensure ? ensureAgentIndex(agentId) : findAgentIndex(agentId);
     return index >= 0 ? (["agents", "list", index, "tools"] as const) : null;
   };
   const resolveAgentModelFormEntry = (index: number) => {
-    const list = (getCurrentConfigValue() as { agents?: { list?: unknown[] } } | null)?.agents
-      ?.list;
+    const list = (
+      getCurrentConfigValue() as { agents?: { list?: unknown[] } } | null
+    )?.agents?.list;
     const existing = Array.isArray(list)
       ? (list[index] as { model?: unknown } | undefined)?.model
       : undefined;
@@ -668,7 +733,9 @@ export function renderApp(state: AppViewState) {
       [
         ...(state.agentsList?.agents?.map((entry) => entry.id.trim()) ?? []),
         ...state.cronJobs
-          .map((job) => (typeof job.agentId === "string" ? job.agentId.trim() : ""))
+          .map((job) =>
+            typeof job.agentId === "string" ? job.agentId.trim() : "",
+          )
           .filter(Boolean),
       ].filter(Boolean),
     ),
@@ -680,7 +747,10 @@ export function renderApp(state: AppViewState) {
         ...resolveConfiguredCronModelSuggestions(configValue),
         ...state.cronJobs
           .map((job) => {
-            if (job.payload.kind !== "agentTurn" || typeof job.payload.model !== "string") {
+            if (
+              job.payload.kind !== "agentTurn" ||
+              typeof job.payload.model !== "string"
+            ) {
               return "";
             }
             return job.payload.model.trim();
@@ -702,7 +772,8 @@ export function renderApp(state: AppViewState) {
   const accountToSuggestions = (
     selectedDeliveryChannel === "last"
       ? Object.values(state.channelsSnapshot?.channelAccounts ?? {}).flat()
-      : (state.channelsSnapshot?.channelAccounts?.[selectedDeliveryChannel] ?? [])
+      : (state.channelsSnapshot?.channelAccounts?.[selectedDeliveryChannel] ??
+        [])
   )
     .flatMap((account) => [
       normalizeSuggestionValue(account.accountId),
@@ -820,7 +891,8 @@ export function renderApp(state: AppViewState) {
             state.configActiveSection = section;
             state.configActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.configActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.configActiveSubsection = section),
           showModeToggle: true,
           excludeSections: [
             ...COMMUNICATION_SECTION_KEYS,
@@ -843,7 +915,8 @@ export function renderApp(state: AppViewState) {
             state.communicationsActiveSection = section;
             state.communicationsActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.communicationsActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.communicationsActiveSubsection = section),
           navRootLabel: "Communication",
           includeSections: [...COMMUNICATION_SECTION_KEYS],
         });
@@ -859,7 +932,8 @@ export function renderApp(state: AppViewState) {
             state.appearanceActiveSection = section;
             state.appearanceActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.appearanceActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.appearanceActiveSubsection = section),
           navRootLabel: t("tabs.appearance"),
           includeSections: [...APPEARANCE_SECTION_KEYS],
           includeVirtualSections: true,
@@ -876,7 +950,8 @@ export function renderApp(state: AppViewState) {
             state.automationActiveSection = section;
             state.automationActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.automationActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.automationActiveSubsection = section),
           navRootLabel: "Automation",
           includeSections: [...AUTOMATION_SECTION_KEYS],
         });
@@ -892,7 +967,8 @@ export function renderApp(state: AppViewState) {
             state.infrastructureActiveSection = section;
             state.infrastructureActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.infrastructureActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.infrastructureActiveSubsection = section),
           navRootLabel: "Infrastructure",
           includeSections: [...INFRASTRUCTURE_SECTION_KEYS],
         });
@@ -908,7 +984,8 @@ export function renderApp(state: AppViewState) {
             state.aiAgentsActiveSection = section;
             state.aiAgentsActiveSubsection = null;
           },
-          onSubsectionChange: (section) => (state.aiAgentsActiveSubsection = section),
+          onSubsectionChange: (section) =>
+            (state.aiAgentsActiveSubsection = section),
           navRootLabel: "AI & Agents",
           includeSections: [...AI_AGENTS_SECTION_KEYS],
         });
@@ -933,7 +1010,9 @@ export function renderApp(state: AppViewState) {
         return;
     }
   };
-  const refreshAgentsPanelSupplementalData = (panel: AppViewState["agentsPanel"]) => {
+  const refreshAgentsPanelSupplementalData = (
+    panel: AppViewState["agentsPanel"],
+  ) => {
     if (panel === "channels") {
       void loadChannels(state, false);
       return;
@@ -990,9 +1069,9 @@ export function renderApp(state: AppViewState) {
         ? "shell--chat-focus"
         : ""} ${navCollapsed ? "shell--nav-collapsed" : ""} ${navDrawerOpen
         ? "shell--nav-drawer-open"
-        : ""} ${standaloneChat ? "shell--chat-standalone" : ""} ${state.onboarding
-        ? "shell--onboarding"
-        : ""}"
+        : ""} ${standaloneChat
+        ? "shell--chat-standalone"
+        : ""} ${state.onboarding ? "shell--onboarding" : ""}"
     >
       ${standaloneChat
         ? nothing
@@ -1014,10 +1093,14 @@ export function renderApp(state: AppViewState) {
                     state.navDrawerOpen = !navDrawerOpen;
                   }}
                   title="${navDrawerOpen ? t("nav.collapse") : t("nav.expand")}"
-                  aria-label="${navDrawerOpen ? t("nav.collapse") : t("nav.expand")}"
+                  aria-label="${navDrawerOpen
+                    ? t("nav.collapse")
+                    : t("nav.expand")}"
                   aria-expanded=${navDrawerOpen}
                 >
-                  <span class="nav-collapse-toggle__icon" aria-hidden="true">${icons.menu}</span>
+                  <span class="nav-collapse-toggle__icon" aria-hidden="true"
+                    >${icons.menu}</span
+                  >
                 </button>
                 <div class="topnav-shell__content">
                   <dashboard-header .tab=${state.tab}></dashboard-header>
@@ -1031,7 +1114,9 @@ export function renderApp(state: AppViewState) {
                     title="Search or jump to… (⌘K)"
                     aria-label="Open command palette"
                   >
-                    <span class="topbar-search__label">${t("common.search")}</span>
+                    <span class="topbar-search__label"
+                      >${t("common.search")}</span
+                    >
                     <kbd class="topbar-search__kbd">⌘K</kbd>
                   </button>
                   <div class="topbar-status">
@@ -1042,7 +1127,9 @@ export function renderApp(state: AppViewState) {
               </div>
             </header>
             <div class="shell-nav">
-              <aside class="sidebar ${navCollapsed ? "sidebar--collapsed" : ""}">
+              <aside
+                class="sidebar ${navCollapsed ? "sidebar--collapsed" : ""}"
+              >
                 <div class="sidebar-shell">
                   <div class="sidebar-shell__header">
                     <div class="sidebar-brand">
@@ -1055,7 +1142,9 @@ export function renderApp(state: AppViewState) {
                               alt="OpenClaw"
                             />
                             <span class="sidebar-brand__copy">
-                              <span class="sidebar-brand__eyebrow">${t("nav.control")}</span>
+                              <span class="sidebar-brand__eyebrow"
+                                >${t("nav.control")}</span
+                              >
                               <span class="sidebar-brand__title">OpenClaw</span>
                             </span>
                           `}
@@ -1068,11 +1157,17 @@ export function renderApp(state: AppViewState) {
                           ...state.settings,
                           navCollapsed: !state.settings.navCollapsed,
                         })}
-                      title="${navCollapsed ? t("nav.expand") : t("nav.collapse")}"
-                      aria-label="${navCollapsed ? t("nav.expand") : t("nav.collapse")}"
+                      title="${navCollapsed
+                        ? t("nav.expand")
+                        : t("nav.collapse")}"
+                      aria-label="${navCollapsed
+                        ? t("nav.expand")
+                        : t("nav.collapse")}"
                     >
                       <span class="nav-collapse-toggle__icon" aria-hidden="true"
-                        >${navCollapsed ? icons.panelLeftOpen : icons.panelLeftClose}</span
+                        >${navCollapsed
+                          ? icons.panelLeftOpen
+                          : icons.panelLeftClose}</span
                       >
                     </button>
                   </div>
@@ -1080,13 +1175,19 @@ export function renderApp(state: AppViewState) {
                     <nav class="sidebar-nav">
                       ${TAB_GROUPS.map((group) => {
                         const isGroupCollapsed =
-                          state.settings.navGroupsCollapsed[group.label] ?? false;
-                        const hasActiveTab = group.tabs.some((tab) => tab === state.tab);
-                        const showItems = navCollapsed || hasActiveTab || !isGroupCollapsed;
+                          state.settings.navGroupsCollapsed[group.label] ??
+                          false;
+                        const hasActiveTab = group.tabs.some(
+                          (tab) => tab === state.tab,
+                        );
+                        const showItems =
+                          navCollapsed || hasActiveTab || !isGroupCollapsed;
 
                         return html`
                           <section
-                            class="nav-section ${!showItems ? "nav-section--collapsed" : ""}"
+                            class="nav-section ${!showItems
+                              ? "nav-section--collapsed"
+                              : ""}"
                           >
                             ${!navCollapsed
                               ? html`
@@ -1107,7 +1208,9 @@ export function renderApp(state: AppViewState) {
                                     <span class="nav-section__label-text"
                                       >${t(`nav.${group.label}`)}</span
                                     >
-                                    <span class="nav-section__chevron"> ${icons.chevronDown} </span>
+                                    <span class="nav-section__chevron">
+                                      ${icons.chevronDown}
+                                    </span>
                                   </button>
                                 `
                               : nothing}
@@ -1132,29 +1235,44 @@ export function renderApp(state: AppViewState) {
                         rel=${buildExternalLinkRel()}
                         title="${t("common.docs")} (opens in new tab)"
                       >
-                        <span class="nav-item__icon" aria-hidden="true">${icons.book}</span>
+                        <span class="nav-item__icon" aria-hidden="true"
+                          >${icons.book}</span
+                        >
                         ${!navCollapsed
                           ? html`
-                              <span class="nav-item__text">${t("common.docs")}</span>
-                              <span class="nav-item__external-icon">${icons.externalLink}</span>
+                              <span class="nav-item__text"
+                                >${t("common.docs")}</span
+                              >
+                              <span class="nav-item__external-icon"
+                                >${icons.externalLink}</span
+                              >
                             `
                           : nothing}
                       </a>
-                      <div class="sidebar-mode-switch">${renderTopbarThemeModeToggle(state)}</div>
+                      <div class="sidebar-mode-switch">
+                        ${renderTopbarThemeModeToggle(state)}
+                      </div>
                       ${(() => {
                         const version = state.hello?.server?.version ?? "";
                         return version
                           ? html`
-                              <div class="sidebar-version" title=${`v${version}`}>
+                              <div
+                                class="sidebar-version"
+                                title=${`v${version}`}
+                              >
                                 ${!navCollapsed
                                   ? html`
                                       <span class="sidebar-version__label"
                                         >${t("common.version")}</span
                                       >
-                                      <span class="sidebar-version__text">v${version}</span>
+                                      <span class="sidebar-version__text"
+                                        >v${version}</span
+                                      >
                                       ${renderSidebarConnectionStatus(state)}
                                     `
-                                  : html` ${renderSidebarConnectionStatus(state)} `}
+                                  : html`
+                                      ${renderSidebarConnectionStatus(state)}
+                                    `}
                               </div>
                             `
                           : nothing;
@@ -1167,11 +1285,13 @@ export function renderApp(state: AppViewState) {
           `}
       <main class="content ${isChat ? "content--chat" : ""}">
         ${state.updateAvailable &&
-        state.updateAvailable.latestVersion !== state.updateAvailable.currentVersion &&
+        state.updateAvailable.latestVersion !==
+          state.updateAvailable.currentVersion &&
         !isUpdateBannerDismissed(state.updateAvailable)
           ? html`<div class="update-banner callout danger" role="alert">
-              <strong>Update available:</strong> v${state.updateAvailable.latestVersion} (running
-              v${state.updateAvailable.currentVersion}).
+              <strong>Update available:</strong> v${state.updateAvailable
+                .latestVersion}
+              (running v${state.updateAvailable.currentVersion}).
               <button
                 class="btn btn--sm update-banner__btn"
                 ?disabled=${state.updateRunning || !state.connected}
@@ -1199,8 +1319,14 @@ export function renderApp(state: AppViewState) {
               <div>
                 ${isChat
                   ? renderChatSessionSelect(state)
-                  : html`<div class="page-title">${titleForTab(state.tab)}</div>`}
-                ${isChat ? nothing : html`<div class="page-sub">${subtitleForTab(state.tab)}</div>`}
+                  : html`<div class="page-title">
+                      ${titleForTab(state.tab)}
+                    </div>`}
+                ${isChat
+                  ? nothing
+                  : html`<div class="page-sub">
+                      ${subtitleForTab(state.tab)}
+                    </div>`}
               </div>
               <div class="page-meta">
                 ${state.tab === "dreams"
@@ -1208,7 +1334,8 @@ export function renderApp(state: AppViewState) {
                       <div class="dreaming-header-controls">
                         <button
                           class="btn btn--subtle btn--sm"
-                          ?disabled=${dreamingLoading || state.dreamDiaryLoading}
+                          ?disabled=${dreamingLoading ||
+                          state.dreamDiaryLoading}
                           @click=${refreshDreaming}
                         >
                           ${dreamingRefreshLoading
@@ -1224,7 +1351,9 @@ export function renderApp(state: AppViewState) {
                         >
                           <span class="dreams__phase-toggle-dot"></span>
                           <span class="dreams__phase-toggle-label">
-                            ${dreamingOn ? t("dreaming.header.on") : t("dreaming.header.off")}
+                            ${dreamingOn
+                              ? t("dreaming.header.on")
+                              : t("dreaming.header.off")}
                           </span>
                         </button>
                       </div>
@@ -1279,14 +1408,17 @@ export function renderApp(state: AppViewState) {
                 });
               },
               onToggleGatewayTokenVisibility: () => {
-                state.overviewShowGatewayToken = !state.overviewShowGatewayToken;
+                state.overviewShowGatewayToken =
+                  !state.overviewShowGatewayToken;
               },
               onToggleGatewayPasswordVisibility: () => {
-                state.overviewShowGatewayPassword = !state.overviewShowGatewayPassword;
+                state.overviewShowGatewayPassword =
+                  !state.overviewShowGatewayPassword;
               },
               onConnect: () => state.connect(),
               onRefresh: () => state.loadOverview({ refresh: true }),
-              onNavigate: (tab) => state.setTab(tab as import("./navigation.ts").Tab),
+              onNavigate: (tab) =>
+                state.setTab(tab as import("./navigation.ts").Tab),
               onRefreshLogs: () => state.loadOverview({ refresh: true }),
             })
           : nothing}
@@ -1332,7 +1464,8 @@ export function renderApp(state: AppViewState) {
                 onWhatsAppStart: (force) => state.handleWhatsAppStart(force),
                 onWhatsAppWait: () => state.handleWhatsAppWait(),
                 onWhatsAppLogout: () => state.handleWhatsAppLogout(),
-                onConfigPatch: (path, value) => updateConfigFormValue(state, path, value),
+                onConfigPatch: (path, value) =>
+                  updateConfigFormValue(state, path, value),
                 onConfigSave: () => state.handleChannelConfigSave(),
                 onConfigReload: () => state.handleChannelConfigReload(),
                 onNostrProfileEdit: (accountId, profile) =>
@@ -1342,7 +1475,8 @@ export function renderApp(state: AppViewState) {
                   state.handleNostrProfileFieldChange(field, value),
                 onNostrProfileSave: () => state.handleNostrProfileSave(),
                 onNostrProfileImport: () => state.handleNostrProfileImport(),
-                onNostrProfileToggleAdvanced: () => state.handleNostrProfileToggleAdvanced(),
+                onNostrProfileToggleAdvanced: () =>
+                  state.handleNostrProfileToggleAdvanced(),
               }),
             )
           : nothing}
@@ -1626,7 +1760,8 @@ export function renderApp(state: AppViewState) {
                 modelCatalog: state.chatModelCatalog ?? [],
                 onRefresh: async () => {
                   await loadAgents(state);
-                  const agentIds = state.agentsList?.agents?.map((entry) => entry.id) ?? [];
+                  const agentIds =
+                    state.agentsList?.agents?.map((entry) => entry.id) ?? [];
                   if (agentIds.length > 0) {
                     void loadAgentIdentities(state, agentIds);
                   }
@@ -1662,11 +1797,17 @@ export function renderApp(state: AppViewState) {
                     ) {
                       void loadToolsCatalog(state, resolvedAgentId);
                     }
-                    if (resolvedAgentId === resolveAgentIdFromSessionKey(state.sessionKey)) {
-                      const toolsRequestKey = buildToolsEffectiveRequestKey(state, {
-                        agentId: resolvedAgentId,
-                        sessionKey: state.sessionKey,
-                      });
+                    if (
+                      resolvedAgentId ===
+                      resolveAgentIdFromSessionKey(state.sessionKey)
+                    ) {
+                      const toolsRequestKey = buildToolsEffectiveRequestKey(
+                        state,
+                        {
+                          agentId: resolvedAgentId,
+                          sessionKey: state.sessionKey,
+                        },
+                      );
                       if (
                         state.toolsEffectiveResultKey !== toolsRequestKey ||
                         state.toolsEffectiveError
@@ -1708,16 +1849,25 @@ export function renderApp(state: AppViewState) {
                     return;
                   }
                   const content =
-                    state.agentFileDrafts[name] ?? state.agentFileContents[name] ?? "";
+                    state.agentFileDrafts[name] ??
+                    state.agentFileContents[name] ??
+                    "";
                   void saveAgentFile(state, resolvedAgentId, name, content);
                 },
                 onToolsProfileChange: (agentId, profile, clearAllow) => {
-                  const basePath = resolveAgentToolsPath(agentId, Boolean(profile || clearAllow));
+                  const basePath = resolveAgentToolsPath(
+                    agentId,
+                    Boolean(profile || clearAllow),
+                  );
                   if (!basePath) {
                     return;
                   }
                   if (profile) {
-                    updateConfigFormValue(state, [...basePath, "profile"], profile);
+                    updateConfigFormValue(
+                      state,
+                      [...basePath, "profile"],
+                      profile,
+                    );
                   } else {
                     removeConfigFormValue(state, [...basePath, "profile"]);
                   }
@@ -1734,7 +1884,11 @@ export function renderApp(state: AppViewState) {
                     return;
                   }
                   if (alsoAllow.length > 0) {
-                    updateConfigFormValue(state, [...basePath, "alsoAllow"], alsoAllow);
+                    updateConfigFormValue(
+                      state,
+                      [...basePath, "alsoAllow"],
+                      alsoAllow,
+                    );
                   } else {
                     removeConfigFormValue(state, [...basePath, "alsoAllow"]);
                   }
@@ -1749,7 +1903,9 @@ export function renderApp(state: AppViewState) {
                 onChannelsRefresh: () => loadChannels(state, false),
                 onCronRefresh: () => state.loadCron(),
                 onCronRunNow: (jobId) => {
-                  const job = state.cronJobs.find((entry) => entry.id === jobId);
+                  const job = state.cronJobs.find(
+                    (entry) => entry.id === jobId,
+                  );
                   if (!job) {
                     return;
                   }
@@ -1779,10 +1935,13 @@ export function renderApp(state: AppViewState) {
                     return;
                   }
                   const allSkills =
-                    state.agentSkillsReport?.skills?.map((skill) => skill.name).filter(Boolean) ??
-                    [];
+                    state.agentSkillsReport?.skills
+                      ?.map((skill) => skill.name)
+                      .filter(Boolean) ?? [];
                   const existing = Array.isArray(entry?.skills)
-                    ? entry.skills.map((name) => String(name).trim()).filter(Boolean)
+                    ? entry.skills
+                        .map((name) => String(name).trim())
+                        .filter(Boolean)
                     : undefined;
                   const base = existing ?? allSkills;
                   const next = new Set(base);
@@ -1791,24 +1950,39 @@ export function renderApp(state: AppViewState) {
                   } else {
                     next.delete(normalizedSkill);
                   }
-                  updateConfigFormValue(state, ["agents", "list", index, "skills"], [...next]);
+                  updateConfigFormValue(
+                    state,
+                    ["agents", "list", index, "skills"],
+                    [...next],
+                  );
                 },
                 onAgentSkillsClear: (agentId) => {
                   const index = findAgentIndex(agentId);
                   if (index < 0) {
                     return;
                   }
-                  removeConfigFormValue(state, ["agents", "list", index, "skills"]);
+                  removeConfigFormValue(state, [
+                    "agents",
+                    "list",
+                    index,
+                    "skills",
+                  ]);
                 },
                 onAgentSkillsDisableAll: (agentId) => {
                   const index = ensureAgentIndex(agentId);
                   if (index < 0) {
                     return;
                   }
-                  updateConfigFormValue(state, ["agents", "list", index, "skills"], []);
+                  updateConfigFormValue(
+                    state,
+                    ["agents", "list", index, "skills"],
+                    [],
+                  );
                 },
                 onModelChange: (agentId, modelId) => {
-                  const index = modelId ? ensureAgentIndex(agentId) : findAgentIndex(agentId);
+                  const index = modelId
+                    ? ensureAgentIndex(agentId)
+                    : findAgentIndex(agentId);
                   if (index < 0) {
                     return;
                   }
@@ -1817,8 +1991,13 @@ export function renderApp(state: AppViewState) {
                   if (!modelId) {
                     removeConfigFormValue(state, basePath);
                   } else {
-                    if (existing && typeof existing === "object" && !Array.isArray(existing)) {
-                      const fallbacks = (existing as { fallbacks?: unknown }).fallbacks;
+                    if (
+                      existing &&
+                      typeof existing === "object" &&
+                      !Array.isArray(existing)
+                    ) {
+                      const fallbacks = (existing as { fallbacks?: unknown })
+                        .fallbacks;
                       const next = {
                         primary: modelId,
                         ...(Array.isArray(fallbacks) ? { fallbacks } : {}),
@@ -1831,9 +2010,14 @@ export function renderApp(state: AppViewState) {
                   void refreshVisibleToolsEffectiveForCurrentSession(state);
                 },
                 onModelFallbacksChange: (agentId, fallbacks) => {
-                  const normalized = fallbacks.map((name) => name.trim()).filter(Boolean);
+                  const normalized = fallbacks
+                    .map((name) => name.trim())
+                    .filter(Boolean);
                   const currentConfig = getCurrentConfigValue();
-                  const resolvedConfig = resolveAgentConfig(currentConfig, agentId);
+                  const resolvedConfig = resolveAgentConfig(
+                    currentConfig,
+                    agentId,
+                  );
                   const effectivePrimary =
                     resolveModelPrimary(resolvedConfig.entry?.model) ??
                     resolveModelPrimary(resolvedConfig.defaults?.model);
@@ -1846,19 +2030,26 @@ export function renderApp(state: AppViewState) {
                       ? effectivePrimary
                         ? ensureAgentIndex(agentId)
                         : -1
-                      : (effectiveFallbacks?.length ?? 0) > 0 || findAgentIndex(agentId) >= 0
+                      : (effectiveFallbacks?.length ?? 0) > 0 ||
+                          findAgentIndex(agentId) >= 0
                         ? ensureAgentIndex(agentId)
                         : -1;
                   if (index < 0) {
                     return;
                   }
-                  const { basePath, existing } = resolveAgentModelFormEntry(index);
+                  const { basePath, existing } =
+                    resolveAgentModelFormEntry(index);
                   const resolvePrimary = () => {
                     if (typeof existing === "string") {
                       return existing.trim() || null;
                     }
-                    if (existing && typeof existing === "object" && !Array.isArray(existing)) {
-                      const primary = (existing as { primary?: unknown }).primary;
+                    if (
+                      existing &&
+                      typeof existing === "object" &&
+                      !Array.isArray(existing)
+                    ) {
+                      const primary = (existing as { primary?: unknown })
+                        .primary;
                       if (typeof primary === "string") {
                         const trimmed = primary.trim();
                         return trimmed || null;
@@ -1887,7 +2078,11 @@ export function renderApp(state: AppViewState) {
                   if (!configValue) {
                     return;
                   }
-                  updateConfigFormValue(state, ["agents", "defaultId"], agentId);
+                  updateConfigFormValue(
+                    state,
+                    ["agents", "defaultId"],
+                    agentId,
+                  );
                 },
               }),
             )
@@ -1916,9 +2111,11 @@ export function renderApp(state: AppViewState) {
                 clawhubInstallSlug: state.clawhubInstallSlug,
                 clawhubInstallMessage: state.clawhubInstallMessage,
                 onFilterChange: (next) => (state.skillsFilter = next),
-                onStatusFilterChange: (next) => (state.skillsStatusFilter = next),
+                onStatusFilterChange: (next) =>
+                  (state.skillsStatusFilter = next),
                 onRefresh: () => loadSkills(state, { clearMessages: true }),
-                onToggle: (key, enabled) => updateSkillEnabled(state, key, enabled),
+                onToggle: (key, enabled) =>
+                  updateSkillEnabled(state, key, enabled),
                 onEdit: (key, value) => updateSkillEdit(state, key, value),
                 onSaveKey: (key) => saveSkillApiKey(state, key),
                 onInstall: (skillKey, name, installId) =>
@@ -1930,7 +2127,10 @@ export function renderApp(state: AppViewState) {
                   if (clawhubSearchTimer) {
                     clearTimeout(clawhubSearchTimer);
                   }
-                  clawhubSearchTimer = setTimeout(() => searchClawHub(state, query), 300);
+                  clawhubSearchTimer = setTimeout(
+                    () => searchClawHub(state, query),
+                    300,
+                  );
                 },
                 onClawHubDetailOpen: (slug) => loadClawHubDetail(state, slug),
                 onClawHubDetailClose: () => closeClawHubDetail(state),
@@ -1948,7 +2148,10 @@ export function renderApp(state: AppViewState) {
                 devicesList: state.devicesList,
                 configForm:
                   state.configForm ??
-                  (state.configSnapshot?.config as Record<string, unknown> | null),
+                  (state.configSnapshot?.config as Record<
+                    string,
+                    unknown
+                  > | null),
                 configLoading: state.configLoading,
                 configSaving: state.configSaving,
                 configDirty: state.configFormDirty,
@@ -1963,15 +2166,19 @@ export function renderApp(state: AppViewState) {
                 execApprovalsTargetNodeId: state.execApprovalsTargetNodeId,
                 onRefresh: () => loadNodes(state),
                 onDevicesRefresh: () => loadDevices(state),
-                onDeviceApprove: (requestId) => approveDevicePairing(state, requestId),
-                onDeviceReject: (requestId) => rejectDevicePairing(state, requestId),
+                onDeviceApprove: (requestId) =>
+                  approveDevicePairing(state, requestId),
+                onDeviceReject: (requestId) =>
+                  rejectDevicePairing(state, requestId),
                 onDeviceRotate: (deviceId, role, scopes) =>
                   rotateDeviceToken(state, { deviceId, role, scopes }),
-                onDeviceRevoke: (deviceId, role) => revokeDeviceToken(state, { deviceId, role }),
+                onDeviceRevoke: (deviceId, role) =>
+                  revokeDeviceToken(state, { deviceId, role }),
                 onLoadConfig: () => loadConfig(state),
                 onLoadExecApprovals: () => {
                   const target =
-                    state.execApprovalsTarget === "node" && state.execApprovalsTargetNodeId
+                    state.execApprovalsTarget === "node" &&
+                    state.execApprovalsTargetNodeId
                       ? {
                           kind: "node" as const,
                           nodeId: state.execApprovalsTargetNodeId,
@@ -1981,13 +2188,24 @@ export function renderApp(state: AppViewState) {
                 },
                 onBindDefault: (nodeId) => {
                   if (nodeId) {
-                    updateConfigFormValue(state, ["tools", "exec", "node"], nodeId);
+                    updateConfigFormValue(
+                      state,
+                      ["tools", "exec", "node"],
+                      nodeId,
+                    );
                   } else {
                     removeConfigFormValue(state, ["tools", "exec", "node"]);
                   }
                 },
                 onBindAgent: (agentIndex, nodeId) => {
-                  const basePath = ["agents", "list", agentIndex, "tools", "exec", "node"];
+                  const basePath = [
+                    "agents",
+                    "list",
+                    agentIndex,
+                    "tools",
+                    "exec",
+                    "node",
+                  ];
                   if (nodeId) {
                     updateConfigFormValue(state, basePath, nodeId);
                   } else {
@@ -2008,10 +2226,12 @@ export function renderApp(state: AppViewState) {
                 },
                 onExecApprovalsPatch: (path, value) =>
                   updateExecApprovalsFormValue(state, path, value),
-                onExecApprovalsRemove: (path) => removeExecApprovalsFormValue(state, path),
+                onExecApprovalsRemove: (path) =>
+                  removeExecApprovalsFormValue(state, path),
                 onSaveExecApprovals: () => {
                   const target =
-                    state.execApprovalsTarget === "node" && state.execApprovalsTargetNodeId
+                    state.execApprovalsTarget === "node" &&
+                    state.execApprovalsTargetNodeId
                       ? {
                           kind: "node" as const,
                           nodeId: state.execApprovalsTargetNodeId,
@@ -2078,7 +2298,8 @@ export function renderApp(state: AppViewState) {
           ? renderDreaming({
               active: dreamingOn,
               shortTermCount: state.dreamingStatus?.shortTermCount ?? 0,
-              groundedSignalCount: state.dreamingStatus?.groundedSignalCount ?? 0,
+              groundedSignalCount:
+                state.dreamingStatus?.groundedSignalCount ?? 0,
               totalSignalCount: state.dreamingStatus?.totalSignalCount ?? 0,
               promotedCount: state.dreamingStatus?.promotedToday ?? 0,
               phases: state.dreamingStatus?.phases ?? undefined,
@@ -2136,7 +2357,8 @@ export function renderApp(state: AppViewState) {
             })
           : nothing}
       </main>
-      ${renderExecApprovalPrompt(state)} ${renderGatewayUrlConfirmation(state)} ${nothing}
+      ${renderExecApprovalPrompt(state)} ${renderGatewayUrlConfirmation(state)}
+      ${nothing}
     </div>
   `;
 }

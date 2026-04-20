@@ -623,4 +623,81 @@ describe("createPersistentChatSession", () => {
       includeUnknown: true,
     });
   });
+
+  it("createPersistentChatSession skips a missing parent session for a switched agent", async () => {
+    const settings: AppViewState["settings"] = {
+      gatewayUrl: "",
+      token: "",
+      locale: "en",
+      sessionKey: "main",
+      lastActiveSessionKey: "main",
+      theme: "claw",
+      themeMode: "dark",
+      splitRatio: 0.6,
+      navWidth: 280,
+      navCollapsed: false,
+      navGroupsCollapsed: {},
+      borderRadius: 50,
+      chatFocusMode: false,
+      chatShowThinking: false,
+      chatShowToolCalls: true,
+    };
+    const request = vi.fn(async (method: string) => {
+      if (method === "sessions.create") {
+        return { key: "agent:beta:chat:new-session" };
+      }
+      throw new Error(`Unexpected request: ${method}`);
+    });
+
+    const state = {
+      agentIdentityById: {},
+      agentSkillsById: {},
+      agentSkillsLoading: false,
+      agentSkillsError: null,
+      agentSkillsAgentId: null,
+      agentsList: null,
+      agentsSelectedId: "beta",
+      chatAttachments: [],
+      chatDraft: "",
+      chatMessage: "keep this draft",
+      chatModelId: null,
+      chatRunId: null,
+      chatSideResultTerminalRuns: new Set<string>(),
+      chatStreamStartedAt: null,
+      settings,
+      connected: true,
+      client: { request },
+      sessionsResult: {
+        sessions: [
+          {
+            key: "agent:main:main",
+            kind: "direct",
+            updatedAt: 0,
+            model: "gpt-5.4",
+          },
+        ],
+      },
+      applySettings(next: typeof settings) {
+        state.settings = next;
+      },
+      loadAssistantIdentity: vi.fn(),
+      resetToolStream: vi.fn(),
+      resetChatScroll: vi.fn(),
+    } as unknown as AppViewState;
+
+    refreshChatAvatarMock.mockResolvedValue(undefined);
+    refreshSlashCommandsMock.mockResolvedValue(undefined);
+    loadChatHistoryMock.mockResolvedValue(undefined);
+    loadSessionsMock.mockResolvedValue(undefined);
+
+    state.sessionKey = "agent:beta:main";
+
+    await createPersistentChatSession(state);
+
+    expect(request).toHaveBeenCalledWith("sessions.create", {
+      agentId: "beta",
+    });
+    expect(state.sessionKey).toBe("agent:beta:chat:new-session");
+    expect(state.chatMessage).toBe("keep this draft");
+  });
 });
