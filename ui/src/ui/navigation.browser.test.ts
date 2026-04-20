@@ -525,6 +525,16 @@ describe("control UI routing", () => {
     expect(window.location.search).toBe("");
   });
 
+  it("hydrates token on the standalone chat route and keeps the path", async () => {
+    const app = mountApp("/chat/standalone?token=abc123");
+    await app.updateComplete;
+
+    expect(app.chatStandalone).toBe(true);
+    expect(app.settings.token).toBe("abc123");
+    expect(window.location.pathname).toBe("/chat/standalone");
+    expect(window.location.search).toBe("?session=main");
+  });
+
   it("strips password URL params without importing them", async () => {
     const app = mountApp("/ui/overview?password=sekret");
     await app.updateComplete;

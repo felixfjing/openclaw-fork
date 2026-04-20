@@ -447,6 +447,28 @@ function resolveAssistantAvatarUrl(state: AppViewState): string | undefined {
   return identity?.avatarUrl;
 }
 
+function hasStandaloneAuthToken(state: AppViewState): boolean {
+  if (!state.chatStandalone) {
+    return false;
+  }
+  const token = state.settings.token.trim();
+  if (token) {
+    return true;
+  }
+  return Boolean(state.pendingGatewayToken?.trim());
+}
+
+function renderStandaloneConnectingState(state: AppViewState) {
+  return html`
+    <div class="standalone-connecting" role="status" aria-live="polite">
+      <div class="standalone-connecting__card">
+        <span class="standalone-connecting__spinner" aria-hidden="true"></span>
+        <div class="standalone-connecting__text">正在加载</div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderApp(state: AppViewState) {
   const updatableState = state as AppViewState & { requestUpdate?: () => void };
   const requestHostUpdate =
@@ -458,6 +480,11 @@ export function renderApp(state: AppViewState) {
   // Gate: require successful gateway connection before showing the dashboard.
   // The gateway URL confirmation overlay is always rendered so URL-param flows still work.
   if (!state.connected) {
+    if (hasStandaloneAuthToken(state) && !state.lastError) {
+      return html`
+        ${renderStandaloneConnectingState(state)} ${renderGatewayUrlConfirmation(state)}
+      `;
+    }
     return html`
       ${renderLoginGate(state)} ${renderGatewayUrlConfirmation(state)}
     `;

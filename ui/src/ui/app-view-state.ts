@@ -117,6 +117,7 @@ export type AppViewState = {
   execApprovalBusy: boolean;
   execApprovalError: string | null;
   pendingGatewayUrl: string | null;
+  pendingGatewayToken: string | null;
   configLoading: boolean;
   configRaw: string;
   configRawOriginal: string;
